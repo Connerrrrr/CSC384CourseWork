@@ -88,7 +88,8 @@ def fval_function(sN, weight):
     # The function must return a numeric f-value.
     # The value will determine your state's position on the Frontier list during a 'custom' search.
     # You must initialize your search engine object as a 'custom' search engine if you supply a custom fval function.
-    return 0
+    fval = sN.gval + (weight * sN.hval)
+    return fval
 
 
 def anytime_weighted_astar(initial_state, heur_fn, weight=1., timebound=10):
@@ -106,12 +107,24 @@ def anytime_gbfs(initial_state, heur_fn, timebound=10):
     '''INPUT: a sokoban state that represents the start state and a timebound (number of seconds)'''
     '''OUTPUT: A goal state (if a goal is found), else False'''
     '''implementation of weighted astar algorithm'''
-    search_engine = SearchEngine(strategy="best_first")
+    search_engine = SearchEngine(strategy="best_first", cc_level="full")
     search_engine.init_search(initial_state, sokoban_goal_state, heur_fn)
 
     end_time = os.times()[0] + timebound
 
+    result = False
 
-    while os.times()[0] < end_time:
-        a = 1
-    return False
+    cost_bound = (float("inf"), float("inf"), float("inf"))
+    time = 0
+    while os.times()[0] <= end_time:
+        final_state = search_engine.search(end_time - os.times()[0], cost_bound)
+        if final_state:
+            result = final_state
+            # subtract one so search compares >= for costbound, not >
+            # send in infinity for hval since solution.hval is always zero
+            cost_bound = (result.gval - 1, float('inf'), float('inf'))
+        else:
+            break
+        time += 1
+    print("Searched {} times".format(time))
+    return result
