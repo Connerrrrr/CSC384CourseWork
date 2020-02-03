@@ -1,1 +1,6 @@
 /** WRITE YOUR TIPS IN THIS FILE **/
+Tip1. It is worthwhile to play the sokoban game on your own. It is very useful to grasp the idea of the game.
+
+Tip2. Consider very carefully about all the potential edge cases. Boxes in either corner or along the edge without storage alongside are all considered edge cases.
+
+Tip3. Divide and conquer the problem would be useful. When comes to multiple robots and multiple boxes, divide into two parts, one from robots to boxes and the other from boxes to storage

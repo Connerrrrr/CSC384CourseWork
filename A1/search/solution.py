@@ -98,7 +98,6 @@ def is_movable(box_pos, state):
     # check if a block is cornered given the position of the block and the size of the map
     # obst_list includes other boxes
     obst_list = state.obstacles | state.boxes
-    print(state.obstacles, state.boxes, obst_list)
     up_pos = (box_pos[0], box_pos[1]+1)
     down_pos = (box_pos[0], box_pos[1]-1)
     left_pos = (box_pos[0]-1, box_pos[1])
@@ -159,8 +158,8 @@ def is_edged(box_pos, state):
 
 
 def num_obstacles(ori, dest, state):
-    #return numbers of obstacles from ori to dest
-    #robots on the way also considered as obstacles
+    # return numbers of obstacles from ori to dest
+    # robots on the way also considered as obstacles
     total = 0
     cast_rob = frozenset(state.robots)
     all_obs = state.obstacles|cast_rob
@@ -170,8 +169,9 @@ def num_obstacles(ori, dest, state):
                 total += 1
     return total
 
+
 def get_possible_storage(box, state):
-    #see the storage is avaliable,
+    # see the storage is avaliable,
     # remove from the list if the any storage is already occupied.
     possible = []
     for place in state.storage:
@@ -199,12 +199,13 @@ def box_to_dest(state):
         cost += cost_each_box
     return cost
 
+
 def rob_to_box(state):
     # return value of sum of all robert to its closest box,
     # add considerations of obstacles along the side
     cost = 0
     for rob in state.robots:
-        #find the distance of the closest storage for each robot
+        # find the distance of the closest storage for each robot
         closest = float("inf")
         for box in state.boxes:
             if (manhattan_distance(box, rob) + num_obstacles(rob, box, state) * 2) < closest:
