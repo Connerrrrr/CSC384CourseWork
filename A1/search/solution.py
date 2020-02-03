@@ -139,14 +139,14 @@ def is_movable(box_pos, state):
 
 def is_edged(box_pos, state):
     # if the box is on edge,and there is no storage along the side, then it is still an impossible position
-    possible_storage_pos = get_possible_storage(box_pos,state)
+    possible_storage_pos = get_possible_storage(box_pos, state)
     x_list = [pos[0] for pos in possible_storage_pos]
     y_list = [pos[1] for pos in possible_storage_pos]
     if box_pos[0] == 0:
         if not any(i == 0 for i in x_list):
             return True
     if box_pos[0] == (state.width - 1):
-        if not any(i == (state.width-1) for i in x_list):
+        if not any(i == (state.width - 1) for i in x_list):
             return True
     if box_pos[1] == (state.height - 1):
         if not any(i == state.height - 1 for i in y_list):
@@ -247,7 +247,29 @@ def anytime_weighted_astar(initial_state, heur_fn, weight=1., timebound=10):
     '''INPUT: a sokoban state that represents the start state and a timebound (number of seconds)'''
     '''OUTPUT: A goal state (if a goal is found), else False'''
     '''implementation of weighted astar algorithm'''
-    return False
+    initial_time = os.times()[0]
+    time_remaining = timebound
+    engine = SearchEngine('custom', 'full')
+    engine.init_search(initial_state, sokoban_goal_state, heur_fn, (lambda sN: fval_function(sN, weight)))
+    # first search
+    best_cost = float("inf")
+    result = engine.search(time_remaining, costbound=(float("inf"), float("inf"), best_cost))
+    time_remaining = timebound - (os.times()[0] - initial_time)
+    if not result:  # no solution found
+        return False
+    else:
+        best_cost = result.gval + heur_fn(result)
+
+    # while still time and frontier is not empty
+    while time_remaining > 0 and not engine.open.empty():
+        better_result = engine.search(time_remaining, (float("inf"), float("inf"), best_cost))
+        time_remaining = timebound - (os.times()[0] - initial_time)
+        if better_result:  # better result found
+            best_cost = better_result.gval + heur_fn(better_result)
+            result = better_result
+        else:
+            break
+    return result
 
 
 def anytime_gbfs(initial_state, heur_fn, timebound=10):
