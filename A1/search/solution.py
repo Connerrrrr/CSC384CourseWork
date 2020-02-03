@@ -21,6 +21,10 @@ def sokoban_goal_state(state):
     return True
 
 
+def manhattan_distance(obj_one, obj_two):
+    return abs(obj_one[0] - obj_two[0]) + abs(obj_one[1] - obj_two[1])
+
+
 def heur_manhattan_distance(state):
     # IMPLEMENT
     '''admissible sokoban puzzle heuristic: manhattan distance'''
@@ -36,7 +40,7 @@ def heur_manhattan_distance(state):
     for box in state.boxes:
         distances = list()
         for storage in state.storage:
-            curr_dis = (abs(box[0] - storage[0]) + abs(box[1] - storage[1]))
+            curr_dis = manhattan_distance(box, storage)
             distances.append(curr_dis)
         if len(distances) > 0:
             distance_sum += min(distances)
@@ -63,7 +67,151 @@ def heur_alternate(state):
     # heur_manhattan_distance has flaws.
     # Write a heuristic function that improves upon heur_manhattan_distance to estimate distance between the current state and the goal.
     # Your function should return a numeric value for the estimate of the distance to the goal.
-    return 0
+
+    heru_alt = 0
+    # our cost consist of two components: the cost of the box in current position to our final storage +
+    #                                     the cost of (closest) robert need to walk to position of the box
+    if check_impossible(state):
+        return float("inf")
+    heru_alt += box_to_dest(state)
+    heru_alt += rob_to_box(state)
+    return heru_alt
+
+
+def check_impossible(state):
+    # impossible cases consists of two situations
+    # (1)the box is in corner
+    # (2)the box in on edge and no storage avaliable in edge
+    # return True if state is impossible, False otherwise
+    for box in state.boxes:
+        possible_storage_positions = get_possible_storage(box, state)
+        if box not in possible_storage_positions:
+            if is_movable(box, state):
+                return True
+            if is_edged(box, state):
+                return True
+    return False
+
+
+def is_movable(box_pos, state):
+    # helper function for check_impossible
+    # check if a block is cornered given the position of the block and the size of the map
+    # obst_list includes other boxes
+    obst_list = state.obstacles | state.boxes
+    print(state.obstacles, state.boxes, obst_list)
+    up_pos = (box_pos[0], box_pos[1]+1)
+    down_pos = (box_pos[0], box_pos[1]-1)
+    left_pos = (box_pos[0]-1, box_pos[1])
+    right_pos = (box_pos[0]+1, box_pos[1])
+    # first test if there are walls,then any consecutive boxes are immovable
+    if box_pos[0] == 0:
+        if box_pos[1] == 0:
+            return True
+        if box_pos[1] == state.height - 1:
+            return True
+        if up_pos in obst_list:
+            return True
+        if down_pos in obst_list:
+            return True
+        return False
+    if box_pos[0] == state.width - 1:
+        if box_pos[1] == 0:
+            return True
+        if box_pos[1] == state.height - 1:
+            return True
+        if up_pos in obst_list:
+            return True
+        if down_pos in obst_list:
+            return True
+        return False
+    # no walls but surrounded by obstacles
+    if up_pos in state.obstacles:
+        if left_pos in state.obstacles:
+            return True
+        if right_pos in state.obstacles:
+            return True
+    if down_pos in state.obstacles:
+        if left_pos in state.obstacles:
+            return True
+        if right_pos in state.obstacles:
+            return True
+    return False
+
+
+def is_edged(box_pos, state):
+    # if the box is on edge,and there is no storage along the side, then it is still an impossible position
+    possible_storage_pos = get_possible_storage(box_pos,state)
+    x_list = [pos[0] for pos in possible_storage_pos]
+    y_list = [pos[1] for pos in possible_storage_pos]
+    if box_pos[0] == 0:
+        if not any(i == 0 for i in x_list):
+            return True
+    if box_pos[0] == (state.width - 1):
+        if not any(i == (state.width-1) for i in x_list):
+            return True
+    if box_pos[1] == (state.height - 1):
+        if not any(i == state.height - 1 for i in y_list):
+            return True
+    if box_pos[1] == 0:
+        if not any(i == 0 for i in y_list):
+            return True
+    return False
+
+
+def num_obstacles(ori, dest, state):
+    #return numbers of obstacles from ori to dest
+    #robots on the way also considered as obstacles
+    total = 0
+    cast_rob = frozenset(state.robots)
+    all_obs = state.obstacles|cast_rob
+    for obst in all_obs:
+        if max(dest[0], ori[0]) > obst[0] > min(ori[0], dest[0]):
+            if max(dest[1], ori[1]) > obst[1] > min(ori[1], dest[1]):
+                total += 1
+    return total
+
+def get_possible_storage(box, state):
+    #see the storage is avaliable,
+    # remove from the list if the any storage is already occupied.
+    possible = []
+    for place in state.storage:
+        possible.append(place)
+    if box in possible:
+        return [box]
+    for other_boxes in state.boxes:
+        if box != other_boxes:
+            if other_boxes in possible:
+                possible.remove(other_boxes)
+    return possible
+
+
+def box_to_dest(state):
+    # return value of the sum of box to its closest possible positions
+    # add considerations of obstacles along the side
+    cost = 0
+    for box in state.boxes:
+        possible_positions = get_possible_storage(box, state)
+        cost_each_box = float("inf")
+        for possibility in possible_positions:
+            current_cost = manhattan_distance(possibility, box) + num_obstacles(box, possibility, state) * 2
+            if current_cost < cost_each_box:
+                cost_each_box = current_cost
+        cost += cost_each_box
+    return cost
+
+def rob_to_box(state):
+    # return value of sum of all robert to its closest box,
+    # add considerations of obstacles along the side
+    cost = 0
+    for rob in state.robots:
+        #find the distance of the closest storage for each robot
+        closest = float("inf")
+        for box in state.boxes:
+            if (manhattan_distance(box, rob) + num_obstacles(rob, box, state) * 2) < closest:
+                closest = manhattan_distance(box, rob) + num_obstacles(rob, box, state)*2
+        cost += closest
+    return cost
+# ---------------------------------------------------------------------
 
 
 def heur_zero(state):
