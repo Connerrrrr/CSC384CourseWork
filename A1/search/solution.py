@@ -67,109 +67,117 @@ def heur_alternate(state):
     # heur_manhattan_distance has flaws.
     # Write a heuristic function that improves upon heur_manhattan_distance to estimate distance between the current state and the goal.
     # Your function should return a numeric value for the estimate of the distance to the goal.
-
-    heru_alt = 0
-    # our cost consist of two components: the cost of the box in current position to our final storage +
-    #                                     the cost of (closest) robert need to walk to position of the box
+    heur_alt = 0
     if check_impossible(state):
         return float("inf")
-    heru_alt += box_to_dest(state)
-    heru_alt += rob_to_box(state)
-    return heru_alt
+    heur_alt += box_to_dest(state)
+    heur_alt += robots_to_box(state)
+    return heur_alt
 
 
 def check_impossible(state):
-    # impossible cases consists of two situations
     # (1)the box is in corner
     # (2)the box in on edge and no storage avaliable in edge
     # return True if state is impossible, False otherwise
     for box in state.boxes:
         possible_storage_positions = get_possible_storage(box, state)
         if box not in possible_storage_positions:
-            if is_movable(box, state):
+            if box_against_corner(box, state):
                 return True
-            if is_edged(box, state):
+            if box_against_corner_of_obs_or_consec_boxes(box, state):
+                return True
+            if edge_without_storage(box, state):
                 return True
     return False
 
 
-def is_movable(box_pos, state):
-    # helper function for check_impossible
-    # check if a block is cornered given the position of the block and the size of the map
-    # obst_list includes other boxes
-    obst_list = state.obstacles | state.boxes
-    up_pos = (box_pos[0], box_pos[1]+1)
-    down_pos = (box_pos[0], box_pos[1]-1)
-    left_pos = (box_pos[0]-1, box_pos[1])
-    right_pos = (box_pos[0]+1, box_pos[1])
-    # first test if there are walls,then any consecutive boxes are immovable
-    if box_pos[0] == 0:
-        if box_pos[1] == 0:
-            return True
-        if box_pos[1] == state.height - 1:
-            return True
-        if up_pos in obst_list:
-            return True
-        if down_pos in obst_list:
-            return True
-        return False
-    if box_pos[0] == state.width - 1:
-        if box_pos[1] == 0:
-            return True
-        if box_pos[1] == state.height - 1:
-            return True
-        if up_pos in obst_list:
-            return True
-        if down_pos in obst_list:
-            return True
-        return False
-    # no walls but surrounded by obstacles
-    if up_pos in state.obstacles:
-        if left_pos in state.obstacles:
-            return True
-        if right_pos in state.obstacles:
-            return True
-    if down_pos in state.obstacles:
-        if left_pos in state.obstacles:
-            return True
-        if right_pos in state.obstacles:
-            return True
+def box_against_corner(box, state):
+    (x, y) = box
+    # if the box is at left top or left bottom corner
+    if x == 0 and (y == 0 or y == state.height - 1):
+        return True
+    # if the box is at left top or left bottom corner
+    if x == state.width - 1 and (y == 0 or y == state.height - 1):
+        return True
     return False
 
 
-def is_edged(box_pos, state):
-    # if the box is on edge,and there is no storage along the side, then it is still an impossible position
-    possible_storage_pos = get_possible_storage(box_pos, state)
-    x_list = [pos[0] for pos in possible_storage_pos]
-    y_list = [pos[1] for pos in possible_storage_pos]
-    if box_pos[0] == 0:
-        if not any(i == 0 for i in x_list):
-            return True
-    if box_pos[0] == (state.width - 1):
-        if not any(i == (state.width - 1) for i in x_list):
-            return True
-    if box_pos[1] == (state.height - 1):
-        if not any(i == state.height - 1 for i in y_list):
-            return True
-    if box_pos[1] == 0:
-        if not any(i == 0 for i in y_list):
-            return True
+def box_against_corner_of_obs_or_consec_boxes(box, state):
+    # For this function, obstacles contains original obstacles and other boxes
+    # Two Major situations:
+    # (1) box against the corner of the wall and obstacles
+    # (2) box against the corner of the two original obstacles
+    obstacles = state.obstacles.union(state.boxes)
+    (x, y) = box
+    up = (x, y + 1)
+    down = (x, y - 1)
+    left = (x - 1, y)
+    right = (x + 1, y)
+    # Situation (1)
+    #  if box is against left-most wall, scenario like this: ⌈ or ⌊
+    if x == 0 and ((up in obstacles) or (down in obstacles)):
+        return True
+    #  if box is against right-most wall, scenario like this: ⌉ or ⌋
+    if x == state.width - 1 and ((up in obstacles) or (down in obstacles)):
+        return True
+    #  if box is against top-most wall, scenario like this: ⌈ or ⌉
+    if y == 0 and ((left in obstacles) or (right in obstacles)):
+        return True
+    #  if box is against bottom-most wall, scenario like this: ⌊ or ⌋
+    if y == state.height - 1 and ((left in obstacles) or (right in obstacles)):
+        return True
+
+    # Situation (2)
+    # if box is against two original obstacles, scenario like this: ⌈ or ⌊
+    if up in state.obstacles and ((left in state.obstacles) or (right in state.obstacles)):
+        return True
+    # if box is against two original obstacles, scenario like this: ⌉ or ⌋
+    if down in state.obstacles and ((left in state.obstacles) or (right in state.obstacles)):
+        return True
     return False
 
 
-def num_obstacles(ori, dest, state):
-    # return numbers of obstacles from ori to dest
+def edge_without_storage(box, state):
+    # If the box is along the wall and there is no storage along that wall, this is a dead end
+    (x, y) = box
+
+    possible_storage_pos = get_possible_storage(box, state)
+
+    (x_list, y_list) = ([], [])
+    for coord in possible_storage_pos:
+        x_list.append(coord[0])
+        y_list.append(coord[1])
+    # if the box is along left-most wall
+    if x == 0 and (0 not in x_list):
+        return True
+    # if the box is along right-most wall
+    elif x == (state.width - 1) and ((state.width - 1) not in x_list):
+        return True
+    # if the box is along top-most wall
+    elif y == 0 and (0 not in y_list):
+        return True
+    # if the box is along bottom-most wall
+    elif y == (state.height - 1) and ((state.width - 1) not in y_list):
+        return True
+    else:
+        return False
+
+
+# TODO
+def num_obstacles(origin, destination, state):
+    # return numbers of obstacles from origin to destination
     # robots on the way also considered as obstacles
     total = 0
     cast_rob = frozenset(state.robots)
-    all_obs = state.obstacles|cast_rob
-    for obst in all_obs:
-        if max(dest[0], ori[0]) > obst[0] > min(ori[0], dest[0]):
-            if max(dest[1], ori[1]) > obst[1] > min(ori[1], dest[1]):
+    all_obs = state.obstacles | cast_rob
+    for obstacle in all_obs:
+        if max(destination[0], origin[0]) > obstacle[0] > min(origin[0], destination[0]):
+            if max(destination[1], origin[1]) > obstacle[1] > min(origin[1], destination[1]):
                 total += 1
     return total
 
 
+# TODO
 def get_possible_storage(box, state):
     # see the storage is avaliable,
     # remove from the list if the any storage is already occupied.
@@ -185,6 +193,7 @@ def get_possible_storage(box, state):
     return possible
 
 
+# TODO
 def box_to_dest(state):
     # return value of the sum of box to its closest possible positions
     # add considerations of obstacles along the side
@@ -200,7 +209,8 @@ def box_to_dest(state):
     return cost
 
 
-def rob_to_box(state):
+# TODO
+def robots_to_box(state):
     # return value of sum of all robert to its closest box,
     # add considerations of obstacles along the side
     cost = 0
@@ -241,32 +251,38 @@ def fval_function(sN, weight):
     return fval
 
 
+# TODO
 def anytime_weighted_astar(initial_state, heur_fn, weight=1., timebound=10):
     # IMPLEMENT
     '''Provides an implementation of anytime weighted a-star, as described in the HW1 handout'''
     '''INPUT: a sokoban state that represents the start state and a timebound (number of seconds)'''
     '''OUTPUT: A goal state (if a goal is found), else False'''
     '''implementation of weighted astar algorithm'''
-    initial_time = os.times()[0]
+    end_time = os.times()[0] + timebound
     time_remaining = timebound
+
     engine = SearchEngine('custom', 'full')
     engine.init_search(initial_state, sokoban_goal_state, heur_fn, (lambda sN: fval_function(sN, weight)))
-    # first search
-    best_cost = float("inf")
-    result = engine.search(time_remaining, costbound=(float("inf"), float("inf"), best_cost))
-    time_remaining = timebound - (os.times()[0] - initial_time)
-    if not result:  # no solution found
-        return False
-    else:
-        best_cost = result.gval + heur_fn(result)
 
+    result = False
+
+    # # first search
+    # best_cost = float("inf")
+    # result = engine.search(time_remaining, costbound=(float("inf"), float("inf"), best_cost))
+    # time_remaining = end_time - os.times()[0]
+
+    # if not result:  # no solution found
+    #     return False
+    # else:
+    #     best_cost = result.gval + heur_fn(result)
+
+    best_cost = float("inf")
     # while still time and frontier is not empty
-    while time_remaining > 0 and not engine.open.empty():
-        better_result = engine.search(time_remaining, (float("inf"), float("inf"), best_cost))
-        time_remaining = timebound - (os.times()[0] - initial_time)
-        if better_result:  # better result found
-            best_cost = better_result.gval + heur_fn(better_result)
-            result = better_result
+    while time_remaining > 0:
+        result = engine.search(time_remaining - 0.1, (float("inf"), float("inf"), best_cost))
+        if result:  # better result found
+            best_cost = result.gval + heur_fn(result)
+            time_remaining = end_time - os.times()[0]
         else:
             break
     return result
@@ -282,13 +298,18 @@ def anytime_gbfs(initial_state, heur_fn, timebound=10):
     search_engine.init_search(initial_state, sokoban_goal_state, heur_fn)
 
     end_time = os.times()[0] + timebound
+    time_remaining = timebound
 
     result = False
 
     cost_bound = (float("inf"), float("inf"), float("inf"))
     time = 0
-    while os.times()[0] <= end_time:
-        final_state = search_engine.search(end_time - os.times()[0], cost_bound)
+
+    while time_remaining > 0:
+        # print(time_remaining)
+        # print(os.times()[0])
+        final_state = search_engine.search(time_remaining - 0.1, cost_bound)
+
         if final_state:
             result = final_state
             # subtract one so search compares >= for costbound, not >
@@ -296,6 +317,8 @@ def anytime_gbfs(initial_state, heur_fn, timebound=10):
             cost_bound = (result.gval - 1, float('inf'), float('inf'))
         else:
             break
-        time += 1
-    print("Searched {} times".format(time))
+        time_remaining = end_time - os.times()[0]
+        # print(time_remaining)
+        # time += 1
+    # print("Searched {} times".format(time))
     return result
