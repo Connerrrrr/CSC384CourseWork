@@ -60,7 +60,7 @@ def trivial_heuristic(state):
 
 
 def storage_finder(box, state):
-    # find
+    # find all the available storage spot for the box provided
     storages = []
     # Create a deep copy of storage in current state
     # in order to not mess up with the state status
@@ -88,71 +88,6 @@ def get_num_of_obstacles(origin, destination, state):
         if leftbound < obstacle[0] < rightbound and upperbound < obstacle[0] < lowerbound:
             result += 1
     return result
-
-
-def heur_alternate(state):
-    # IMPLEMENT
-    '''a better heuristic'''
-    '''INPUT: a sokoban state'''
-    '''OUTPUT: a numeric value that serves as an estimate of the distance of the state to the goal.'''
-    # heur_manhattan_distance has flaws.
-    # Write a heuristic function that improves upon heur_manhattan_distance to estimate distance between the current state and the goal.
-    # Your function should return a numeric value for the estimate of the distance to the goal.
-
-    # The improvement is made by the following:
-    # (1) check if current state is a dead end already for following situations:
-    #     (1) one or more boxes are again the corner of the map
-    #     (2) one or more boxes are against the corner of the wall and obstacles
-    #         or the corner of the two original obstacles
-    #     (3) one or more boxes are along the side of the map and there are no storages along that sides
-    # (2) it's hard to dynamically keep track of the optimal position for both boxes and robots, divide and conquer
-    #     is going to be used:
-    #     (1) overall distance from robots to boxes
-    #     (2) overall distance from boxes to storages
-    heur_alt = 0
-    if in_dead_state(state):
-        return float("inf")
-
-    # When dealing with potential obstacles in the way, we assign the distance with doubled distance
-    # for taking a detour, imagine the following:
-    #   if one object wants to move up for two units and there is another object just above it,
-    #   it needs to
-    #       (1) turn right or left (1 unit)
-    #       (2) go up for two units (2 units)
-    #       (3) turn left or right (1 unit)
-
-    # Robot to box
-    # Assign the closest box to each of the robot
-    for robot in state.robots:
-        closest_distance = float("inf")
-        for box in state.boxes:
-            closest_distance = min(manhattan_distance(robot, box) + get_num_of_obstacles(robot, box, state) * 2,
-                                   closest_distance)
-        heur_alt += closest_distance
-
-    # Box to storage
-    # Assign the closest storage to each of the box
-    for box in state.boxes:
-        storages = storage_finder(box, state)
-        min_cost = float("inf")
-        for storage in storages:
-            min_cost = min(manhattan_distance(storage, box) + get_num_of_obstacles(box, storage, state) * 2, min_cost)
-        heur_alt += min_cost
-    return heur_alt
-
-
-def in_dead_state(state):
-    # Check if the state is in dead end, which contains following scenarios
-    # (1) one or more boxes are again the corner of the map
-    # (2) one or more boxes are against the corner of the wall and obstacles or the corner of the two original obstacles
-    # (3) one or more boxes are along the side of the map and there are no storages along that sides
-    for box in state.boxes:
-        possible_storage_positions = storage_finder(box, state)
-        if box not in possible_storage_positions:
-            if box_against_corner(box, state) or box_against_corner_of_obs_or_consec_boxes(box, state)\
-                    or edge_without_storage(box, state):
-                return True
-    return False
 
 
 def box_against_corner(box, state):
@@ -225,6 +160,71 @@ def edge_without_storage(box, state):
         return True
     else:
         return False
+
+
+def heur_alternate(state):
+    # IMPLEMENT
+    '''a better heuristic'''
+    '''INPUT: a sokoban state'''
+    '''OUTPUT: a numeric value that serves as an estimate of the distance of the state to the goal.'''
+    # heur_manhattan_distance has flaws.
+    # Write a heuristic function that improves upon heur_manhattan_distance to estimate distance between the current state and the goal.
+    # Your function should return a numeric value for the estimate of the distance to the goal.
+
+    # The improvement is made by the following:
+    # (1) check if current state is a dead end already for following situations:
+    #     (1) one or more boxes are again the corner of the map
+    #     (2) one or more boxes are against the corner of the wall and obstacles
+    #         or the corner of the two original obstacles
+    #     (3) one or more boxes are along the side of the map and there are no storages along that sides
+    # (2) it's hard to dynamically keep track of the optimal position for both boxes and robots, divide and conquer
+    #     is going to be used:
+    #     (1) overall distance from robots to boxes
+    #     (2) overall distance from boxes to storages
+    heur_alt = 0
+    if in_dead_state(state):
+        return float("inf")
+
+    # When dealing with potential obstacles in the way, we assign the distance with doubled distance
+    # for taking a detour, imagine the following:
+    #   if one object wants to move up for two units and there is another object just above it,
+    #   it needs to
+    #       (1) turn right or left (1 unit)
+    #       (2) go up for two units (2 units)
+    #       (3) turn left or right (1 unit)
+
+    # Robot to box
+    # Assign the closest box to each of the robot
+    for robot in state.robots:
+        closest_distance = float("inf")
+        for box in state.boxes:
+            closest_distance = min(manhattan_distance(robot, box) + get_num_of_obstacles(robot, box, state) * 2,
+                                   closest_distance)
+        heur_alt += closest_distance
+
+    # Box to storage
+    # Assign the closest storage to each of the box
+    for box in state.boxes:
+        storages = storage_finder(box, state)
+        min_cost = float("inf")
+        for storage in storages:
+            min_cost = min(manhattan_distance(storage, box) + get_num_of_obstacles(box, storage, state) * 2, min_cost)
+        heur_alt += min_cost
+    return heur_alt
+
+
+def in_dead_state(state):
+    # Check if the state is in dead end, which contains following scenarios
+    # (1) one or more boxes are again the corner of the map
+    # (2) one or more boxes are against the corner of the wall and obstacles or the corner of the two original obstacles
+    # (3) one or more boxes are along the side of the map and there are no storages along that sides
+    for box in state.boxes:
+        possible_storage_positions = storage_finder(box, state)
+        if box not in possible_storage_positions:
+            if box_against_corner(box, state) or box_against_corner_of_obs_or_consec_boxes(box, state)\
+                    or edge_without_storage(box, state):
+                return True
+    return False
 # ---------------------------------------------------------------------
 
 
@@ -254,7 +254,7 @@ def fval_function(sN, weight):
     return fval
 
 
-# TODO
+# TODO: A* implementation
 def anytime_weighted_astar(initial_state, heur_fn, weight=1., timebound=10):
     # IMPLEMENT
     '''Provides an implementation of anytime weighted a-star, as described in the HW1 handout'''
