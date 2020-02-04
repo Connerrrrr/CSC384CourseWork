@@ -58,7 +58,7 @@ def trivial_heuristic(state):
             count += 1
     return count
 
-
+# TODO
 def heur_alternate(state):
     # IMPLEMENT
     '''a better heuristic'''
@@ -70,8 +70,25 @@ def heur_alternate(state):
     heur_alt = 0
     if check_impossible(state):
         return float("inf")
-    heur_alt += box_to_dest(state)
-    heur_alt += robots_to_box(state)
+
+    # Box to storage
+    for box in state.boxes:
+        possible_positions = get_possible_storage(box, state)
+        cost_each_box = float("inf")
+        for possibility in possible_positions:
+            current_cost = manhattan_distance(possibility, box) + num_obstacles(box, possibility, state) * 2
+            if current_cost < cost_each_box:
+                cost_each_box = current_cost
+        heur_alt += cost_each_box
+
+    # Robot to box
+    for rob in state.robots:
+        # find the distance of the closest storage for each robot
+        closest = float("inf")
+        for box in state.boxes:
+            if (manhattan_distance(box, rob) + num_obstacles(rob, box, state) * 2) < closest:
+                closest = manhattan_distance(box, rob) + num_obstacles(rob, box, state) * 2
+        heur_alt += closest
     return heur_alt
 
 
@@ -191,37 +208,6 @@ def get_possible_storage(box, state):
             if other_boxes in possible:
                 possible.remove(other_boxes)
     return possible
-
-
-# TODO
-def box_to_dest(state):
-    # return value of the sum of box to its closest possible positions
-    # add considerations of obstacles along the side
-    cost = 0
-    for box in state.boxes:
-        possible_positions = get_possible_storage(box, state)
-        cost_each_box = float("inf")
-        for possibility in possible_positions:
-            current_cost = manhattan_distance(possibility, box) + num_obstacles(box, possibility, state) * 2
-            if current_cost < cost_each_box:
-                cost_each_box = current_cost
-        cost += cost_each_box
-    return cost
-
-
-# TODO
-def robots_to_box(state):
-    # return value of sum of all robert to its closest box,
-    # add considerations of obstacles along the side
-    cost = 0
-    for rob in state.robots:
-        # find the distance of the closest storage for each robot
-        closest = float("inf")
-        for box in state.boxes:
-            if (manhattan_distance(box, rob) + num_obstacles(rob, box, state) * 2) < closest:
-                closest = manhattan_distance(box, rob) + num_obstacles(rob, box, state)*2
-        cost += closest
-    return cost
 # ---------------------------------------------------------------------
 
 
