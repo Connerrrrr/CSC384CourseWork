@@ -58,7 +58,38 @@ def trivial_heuristic(state):
             count += 1
     return count
 
-# TODO
+
+def storage_finder(box, state):
+    # find
+    storages = []
+    # Create a deep copy of storage in current state
+    # in order to not mess up with the state status
+    for place in state.storage:
+        storages.append(place)
+    # if the box is in the storage point already
+    # just return the current box's position for indication of stored status
+    if box in storages:
+        return [box]
+    # otherwise, find all the available storages for the box provided
+    for other_boxes in state.boxes:
+        if box != other_boxes and other_boxes in storages:
+            storages.remove(other_boxes)
+    return storages
+
+
+# TODO: does boxes in the path count for obstacles, is it pushable or deadend
+def get_num_of_obstacles(origin, destination, state):
+    # Find the number of obstacles including robots to get to
+    result = 0
+    obstacles = state.obstacles.union(frozenset(state.robots))
+    for obstacle in obstacles:
+        (leftbound, rightbound) = (min(origin[0], destination[0]), max(origin[0], destination[0]))
+        (upperbound, lowerbound) = (min(origin[1], destination[1]), max(origin[1], destination[1]))
+        if leftbound < obstacle[0] < rightbound and upperbound < obstacle[0] < lowerbound:
+            result += 1
+    return result
+
+
 def heur_alternate(state):
     # IMPLEMENT
     '''a better heuristic'''
@@ -67,43 +98,59 @@ def heur_alternate(state):
     # heur_manhattan_distance has flaws.
     # Write a heuristic function that improves upon heur_manhattan_distance to estimate distance between the current state and the goal.
     # Your function should return a numeric value for the estimate of the distance to the goal.
+
+    # The improvement is made by the following:
+    # (1) check if current state is a dead end already for following situations:
+    #     (1) one or more boxes are again the corner of the map
+    #     (2) one or more boxes are against the corner of the wall and obstacles
+    #         or the corner of the two original obstacles
+    #     (3) one or more boxes are along the side of the map and there are no storages along that sides
+    # (2) it's hard to dynamically keep track of the optimal position for both boxes and robots, divide and conquer
+    #     is going to be used:
+    #     (1) overall distance from robots to boxes
+    #     (2) overall distance from boxes to storages
     heur_alt = 0
-    if check_impossible(state):
+    if in_dead_state(state):
         return float("inf")
 
-    # Box to storage
-    for box in state.boxes:
-        possible_positions = get_possible_storage(box, state)
-        cost_each_box = float("inf")
-        for possibility in possible_positions:
-            current_cost = manhattan_distance(possibility, box) + num_obstacles(box, possibility, state) * 2
-            if current_cost < cost_each_box:
-                cost_each_box = current_cost
-        heur_alt += cost_each_box
+    # When dealing with potential obstacles in the way, we assign the distance with doubled distance
+    # for taking a detour, imagine the following:
+    #   if one object wants to move up for two units and there is another object just above it,
+    #   it needs to
+    #       (1) turn right or left (1 unit)
+    #       (2) go up for two units (2 units)
+    #       (3) turn left or right (1 unit)
 
     # Robot to box
-    for rob in state.robots:
-        # find the distance of the closest storage for each robot
-        closest = float("inf")
+    # Assign the closest box to each of the robot
+    for robot in state.robots:
+        closest_distance = float("inf")
         for box in state.boxes:
-            if (manhattan_distance(box, rob) + num_obstacles(rob, box, state) * 2) < closest:
-                closest = manhattan_distance(box, rob) + num_obstacles(rob, box, state) * 2
-        heur_alt += closest
+            closest_distance = min(manhattan_distance(robot, box) + get_num_of_obstacles(robot, box, state) * 2,
+                                   closest_distance)
+        heur_alt += closest_distance
+
+    # Box to storage
+    # Assign the closest storage to each of the box
+    for box in state.boxes:
+        storages = storage_finder(box, state)
+        min_cost = float("inf")
+        for storage in storages:
+            min_cost = min(manhattan_distance(storage, box) + get_num_of_obstacles(box, storage, state) * 2, min_cost)
+        heur_alt += min_cost
     return heur_alt
 
 
-def check_impossible(state):
-    # (1)the box is in corner
-    # (2)the box in on edge and no storage avaliable in edge
-    # return True if state is impossible, False otherwise
+def in_dead_state(state):
+    # Check if the state is in dead end, which contains following scenarios
+    # (1) one or more boxes are again the corner of the map
+    # (2) one or more boxes are against the corner of the wall and obstacles or the corner of the two original obstacles
+    # (3) one or more boxes are along the side of the map and there are no storages along that sides
     for box in state.boxes:
-        possible_storage_positions = get_possible_storage(box, state)
+        possible_storage_positions = storage_finder(box, state)
         if box not in possible_storage_positions:
-            if box_against_corner(box, state):
-                return True
-            if box_against_corner_of_obs_or_consec_boxes(box, state):
-                return True
-            if edge_without_storage(box, state):
+            if box_against_corner(box, state) or box_against_corner_of_obs_or_consec_boxes(box, state)\
+                    or edge_without_storage(box, state):
                 return True
     return False
 
@@ -158,7 +205,7 @@ def edge_without_storage(box, state):
     # If the box is along the wall and there is no storage along that wall, this is a dead end
     (x, y) = box
 
-    possible_storage_pos = get_possible_storage(box, state)
+    possible_storage_pos = storage_finder(box, state)
 
     (x_list, y_list) = ([], [])
     for coord in possible_storage_pos:
@@ -178,36 +225,6 @@ def edge_without_storage(box, state):
         return True
     else:
         return False
-
-
-# TODO
-def num_obstacles(origin, destination, state):
-    # return numbers of obstacles from origin to destination
-    # robots on the way also considered as obstacles
-    total = 0
-    cast_rob = frozenset(state.robots)
-    all_obs = state.obstacles | cast_rob
-    for obstacle in all_obs:
-        if max(destination[0], origin[0]) > obstacle[0] > min(origin[0], destination[0]):
-            if max(destination[1], origin[1]) > obstacle[1] > min(origin[1], destination[1]):
-                total += 1
-    return total
-
-
-# TODO
-def get_possible_storage(box, state):
-    # see the storage is avaliable,
-    # remove from the list if the any storage is already occupied.
-    possible = []
-    for place in state.storage:
-        possible.append(place)
-    if box in possible:
-        return [box]
-    for other_boxes in state.boxes:
-        if box != other_boxes:
-            if other_boxes in possible:
-                possible.remove(other_boxes)
-    return possible
 # ---------------------------------------------------------------------
 
 
