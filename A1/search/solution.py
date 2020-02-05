@@ -77,9 +77,8 @@ def storage_finder(box, state):
     return storages
 
 
-# TODO: does boxes in the path count for obstacles, is it pushable or deadend
 def get_num_of_obstacles(origin, destination, state):
-    # Find the number of obstacles including robots to get to
+    # Find the number of obstacles including robots to get from the origin to destination
     result = 0
     obstacles = state.obstacles.union(frozenset(state.robots))
     for obstacle in obstacles:
@@ -162,6 +161,20 @@ def edge_without_storage(box, state):
         return False
 
 
+def in_dead_state(state):
+    # Check if the state is in dead end, which contains following scenarios
+    # (1) one or more boxes are again the corner of the map
+    # (2) one or more boxes are against the corner of the wall and obstacles or the corner of the two original obstacles
+    # (3) one or more boxes are along the side of the map and there are no storages along that sides
+    for box in state.boxes:
+        possible_storage_positions = storage_finder(box, state)
+        if box not in possible_storage_positions:
+            if box_against_corner(box, state) or box_against_corner_of_obs_or_consec_boxes(box, state)\
+                    or edge_without_storage(box, state):
+                return True
+    return False
+
+
 def heur_alternate(state):
     # IMPLEMENT
     '''a better heuristic'''
@@ -213,20 +226,6 @@ def heur_alternate(state):
     return heur_alt
 
 
-def in_dead_state(state):
-    # Check if the state is in dead end, which contains following scenarios
-    # (1) one or more boxes are again the corner of the map
-    # (2) one or more boxes are against the corner of the wall and obstacles or the corner of the two original obstacles
-    # (3) one or more boxes are along the side of the map and there are no storages along that sides
-    for box in state.boxes:
-        possible_storage_positions = storage_finder(box, state)
-        if box not in possible_storage_positions:
-            if box_against_corner(box, state) or box_against_corner_of_obs_or_consec_boxes(box, state)\
-                    or edge_without_storage(box, state):
-                return True
-    return False
-
-
 def heur_zero(state):
     '''Zero Heuristic can be used to make A* search perform uniform cost search'''
     return 0
@@ -263,7 +262,7 @@ def anytime_weighted_astar(initial_state, heur_fn, weight=1., timebound=10):
     end_time = os.times()[0] + timebound
     time_remaining = timebound
 
-    multiplier = 0.9
+    multiplier = 0.6
 
     # initialize the search engine
     engine = SearchEngine('custom', 'full')
@@ -279,6 +278,8 @@ def anytime_weighted_astar(initial_state, heur_fn, weight=1., timebound=10):
     while time_remaining > 0:
         # search begin, leave 0.1 sec for later processing
         final_state = engine.search(time_remaining - 0.1, (float("inf"), float("inf"), best_cost))
+        # decrease the weight within each iteration
+        weight = weight * multiplier
         # Update the time bound
         time_remaining = end_time - os.times()[0]
         # if more optimal solution found, update the result and the cost bound
