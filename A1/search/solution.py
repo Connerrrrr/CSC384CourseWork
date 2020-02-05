@@ -225,7 +225,6 @@ def in_dead_state(state):
                     or edge_without_storage(box, state):
                 return True
     return False
-# ---------------------------------------------------------------------
 
 
 def heur_zero(state):
@@ -274,15 +273,20 @@ def anytime_weighted_astar(initial_state, heur_fn, weight=1., timebound=10):
     result = False
     best_cost = float("inf")
 
+    # Update the time bound
+    time_remaining = end_time - os.times()[0]
+
     while time_remaining > 0:
-        # search begin
-        final_state = engine.search(time_remaining, (float("inf"), float("inf"), best_cost))
+        # search begin, leave 0.1 sec for later processing
+        final_state = engine.search(time_remaining - 0.1, (float("inf"), float("inf"), best_cost))
+        # Update the time bound
+        time_remaining = end_time - os.times()[0]
         # if more optimal solution found, update the result and the cost bound
         if final_state:
             result = final_state
             best_cost = result.gval + heur_fn(result) - 1
-        # Update the time bound
-        time_remaining = end_time - os.times()[0]
+        else:
+            break
     return result
 
 
@@ -300,17 +304,21 @@ def anytime_gbfs(initial_state, heur_fn, timebound=10):
     search_engine = SearchEngine(strategy="best_first", cc_level="full")
     search_engine.init_search(initial_state, sokoban_goal_state, heur_fn)
 
-    #  Set defaul value for result and cost bound
+    #  Set default value for result and cost bound
     result = False
     cost_bound = (float("inf"), float("inf"), float("inf"))
 
+    # Update the time bound
+    time_remaining = end_time - os.times()[0]
     while time_remaining > 0:
-        # search begin
-        final_state = search_engine.search(time_remaining, cost_bound)
+        # search begin, leave 0.1 sec for later processing
+        final_state = search_engine.search(time_remaining - 0.1, cost_bound)
+        # Update the time bound
+        time_remaining = end_time - os.times()[0]
         # if more optimal solution found, update the result and the cost bound
         if final_state:
             result = final_state
             cost_bound = (result.gval - 1, float('inf'), float('inf'))
-        # Update the time bound
-        time_remaining = end_time - os.times()[0]
+        else:
+            break
     return result
