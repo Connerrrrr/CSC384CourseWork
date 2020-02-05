@@ -254,40 +254,35 @@ def fval_function(sN, weight):
     return fval
 
 
-# TODO: A* implementation
 def anytime_weighted_astar(initial_state, heur_fn, weight=1., timebound=10):
     # IMPLEMENT
     '''Provides an implementation of anytime weighted a-star, as described in the HW1 handout'''
     '''INPUT: a sokoban state that represents the start state and a timebound (number of seconds)'''
     '''OUTPUT: A goal state (if a goal is found), else False'''
     '''implementation of weighted astar algorithm'''
+    # Set up the time bound
     end_time = os.times()[0] + timebound
     time_remaining = timebound
 
+    multiplier = 0.9
+
+    # initialize the search engine
     engine = SearchEngine('custom', 'full')
     engine.init_search(initial_state, sokoban_goal_state, heur_fn, (lambda sN: fval_function(sN, weight)))
 
+    # initialize the result and the upper bound of f
     result = False
-
-    # # first search
-    # best_cost = float("inf")
-    # result = engine.search(time_remaining, costbound=(float("inf"), float("inf"), best_cost))
-    # time_remaining = end_time - os.times()[0]
-
-    # if not result:  # no solution found
-    #     return False
-    # else:
-    #     best_cost = result.gval + heur_fn(result)
-
     best_cost = float("inf")
-    # while still time and frontier is not empty
+
     while time_remaining > 0:
-        result = engine.search(time_remaining - 0.1, (float("inf"), float("inf"), best_cost))
-        if result:  # better result found
-            best_cost = result.gval + heur_fn(result)
-            time_remaining = end_time - os.times()[0]
-        else:
-            break
+        # search begin
+        final_state = engine.search(time_remaining, (float("inf"), float("inf"), best_cost))
+        # if more optimal solution found, update the result and the cost bound
+        if final_state:
+            result = final_state
+            best_cost = result.gval + heur_fn(result) - 1
+        # Update the time bound
+        time_remaining = end_time - os.times()[0]
     return result
 
 
@@ -297,31 +292,25 @@ def anytime_gbfs(initial_state, heur_fn, timebound=10):
     '''INPUT: a sokoban state that represents the start state and a timebound (number of seconds)'''
     '''OUTPUT: A goal state (if a goal is found), else False'''
     '''implementation of weighted astar algorithm'''
-    search_engine = SearchEngine(strategy="best_first", cc_level="full")
-    search_engine.init_search(initial_state, sokoban_goal_state, heur_fn)
-
+    # Set up the time bound
     end_time = os.times()[0] + timebound
     time_remaining = timebound
 
-    result = False
+    # initialize the search engine
+    search_engine = SearchEngine(strategy="best_first", cc_level="full")
+    search_engine.init_search(initial_state, sokoban_goal_state, heur_fn)
 
+    #  Set defaul value for result and cost bound
+    result = False
     cost_bound = (float("inf"), float("inf"), float("inf"))
-    time = 0
 
     while time_remaining > 0:
-        # print(time_remaining)
-        # print(os.times()[0])
-        final_state = search_engine.search(time_remaining - 0.1, cost_bound)
-
+        # search begin
+        final_state = search_engine.search(time_remaining, cost_bound)
+        # if more optimal solution found, update the result and the cost bound
         if final_state:
             result = final_state
-            # subtract one so search compares >= for costbound, not >
-            # send in infinity for hval since solution.hval is always zero
             cost_bound = (result.gval - 1, float('inf'), float('inf'))
-        else:
-            break
+        # Update the time bound
         time_remaining = end_time - os.times()[0]
-        # print(time_remaining)
-        # time += 1
-    # print("Searched {} times".format(time))
     return result

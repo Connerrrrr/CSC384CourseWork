@@ -11,16 +11,16 @@ if __name__ == "__main__":
   # test_manhattan = True
   # test_fval_function = True
   # test_anytime_gbfs = True
-  test_alternate = True
-  # test_anytime_weighted_astar = True
+  # test_alternate = True
+  test_anytime_weighted_astar = True
 
   test_time_astar = False
   test_time_gbfs = False
   test_manhattan = False
   test_fval_function = False
   test_anytime_gbfs = False
-  # test_alternate = False
-  test_anytime_weighted_astar = False
+  test_alternate = False
+  # test_anytime_weighted_astar = False
 
   if test_time_astar:
 
@@ -109,6 +109,11 @@ if __name__ == "__main__":
       se = SearchEngine('best_first', 'full')
       se.init_search(s0, goal_fn=sokoban_goal_state, heur_fn=heur_alternate)
       final = se.search(timebound)
+
+      if final:
+        print(final.gval, output[i])
+      else:
+        print(final, output[i])
 
       if final:
         # final.print_path()

@@ -410,7 +410,7 @@ class SearchEngine:
             if self.search_stop_time: #timebound check
               if os.times()[0] > self.search_stop_time:                
                 #exceeded time bound, must terminate search
-                print("TRACE: Search has exceeeded the time bound provided.")
+                # print("TRACE: Search has exceeeded the time bound provided.")
                 return False
 
              #All states reached by a search node on OPEN have already
