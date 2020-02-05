@@ -205,9 +205,21 @@ def heur_alternate(state):
     #       (1) turn right or left (1 unit)
     #       (2) go up for two units (2 units)
     #       (3) turn left or right (1 unit)
+    #   As shown above, in general the detour has doubled the distance
 
     # Robot to box
-    # Assign the closest box to each of the robot
+    # Assign the closest box to each of the robotdef in_dead_state(state):
+    #     # Check if the state is in dead end, which contains following scenarios
+    #     # (1) one or more boxes are again the corner of the map
+    #     # (2) one or more boxes are against the corner of the wall and obstacles or the corner of the two original obstacles
+    #     # (3) one or more boxes are along the side of the map and there are no storages along that sides
+    #     for box in state.boxes:
+    #         possible_storage_positions = storage_finder(box, state)
+    #         if box not in possible_storage_positions:
+    #             if box_against_corner(box, state) or box_against_corner_of_obs_or_consec_boxes(box, state)\
+    #                     or edge_without_storage(box, state):
+    #                 return True
+    #     return False
     for robot in state.robots:
         closest_distance = float("inf")
         for box in state.boxes:
