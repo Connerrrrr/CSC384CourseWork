@@ -168,6 +168,7 @@ def main(stu_propagators=None):
     print(details)
     print("---finished three_queen_GAC---\n")
     print("Total score %d/4\n" % total)
-	
+
+
 if __name__=="__main__":
     main()
