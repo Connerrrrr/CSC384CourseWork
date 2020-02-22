@@ -98,6 +98,25 @@ def prop_FC(csp, newVar=None):
     if not newVar:
         return True, []
 
+    def prop_FCCheck(C, x):
+        '''Return False if DWO, and True otherwise'''
+        domain = x.cur_domain()
+        for d in domain:
+            # assign d to provided var
+            x.assign(d)
+            # get all the vals for vars
+            vals = []
+            vars = C.get_scope()
+            for var in vars:
+                vals.append(var.get_assigned_value())
+            # if falsifies, prune current value
+            if not C.check(vals):
+                x.prune_value(d)
+            x.unassign()
+        if x.cur_domain_size() == 0:
+            return False
+        return True
+
     for c in csp.get_cons_with_var(newVar):
         DWOoccured = False
 
@@ -114,37 +133,19 @@ def prop_FC(csp, newVar=None):
     return True, []
 
 
-def prop_FCCheck(C, x):
-    '''Return False if DWO, and True otherwise'''
-    domain = x.cur_domain()
-    for d in domain:
-        # assign d to provided var
-        x.assign(d)
-
-        # get all the vals for vars
-        vals = []
-        vars = C.get_scope()
-        for var in vars:
-            vals.append(var.get_assigned_value())
-
-        # if falsifies, prune current value
-        if not C.check(vals):
-            x.prune_value(d)
-        x.unassign()
-
-    if x.cur_domain_size() == 0:
-        return False
-    return True
-
-
 def prop_GAC(csp, newVar=None):
     '''Do GAC propagation. If newVar is None we do initial GAC enforce 
        processing all constraints. Otherwise we do GAC enforce with
        constraints containing newVar on GAC Queue'''
     #IMPLEMENT
-    GACQueue = csp.get_all_cons()
+    for var in csp.get_all_vars():
+        print(var, var.cur_domain())
+    print()
+    if newVar:
+        GACQueue = csp.get_cons_with_var(newVar)
+    else:
+        GACQueue = csp.get_all_cons()
     nGACQueue = []
-
     # GAC Enforce helper
     def prop_GAC_Enforce():
         '''Return False if DWO, and True otherwise'''
@@ -153,22 +154,26 @@ def prop_GAC(csp, newVar=None):
             for v in c.get_scope():
                 for d in v.cur_domain():
                     if not c.has_support(v, d):
+                        print("Pruned value {} for {}".format(d, v))
                         v.prune_value(d)
                         if v.cur_domain_size == 0:
                             GACQueue.clear()
+                            print(False)
                             return False
                         else:
                             for c_prime in nGACQueue:
                                 if v in c_prime.get_scope():
                                     GACQueue.append(c)
                                     nGACQueue.remove(c)
+        print(True)
         return True
 
-    if not newVar:
-        return True, []
+    # if not newVar:
+    #     return True, []
 
     v = ord_mrv(csp)
     curDom = v.domain()
+    print(curDom)
     for d in curDom:
 
         prune_list = []

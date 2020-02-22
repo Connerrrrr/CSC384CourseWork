@@ -73,6 +73,9 @@ def test_simple_GAC(stu_propagators):
         stu_propagators.prop_GAC(queens,newVar=curr_vars[0])
         answer = [[1],[3, 4, 5, 6, 7, 8],[2, 4, 5, 6, 7, 8],[2, 3, 5, 6, 7, 8],[2, 3, 4, 6, 7, 8],[2, 3, 4, 5, 7, 8],[2, 3, 4, 5, 6, 8],[2, 3, 4, 5, 6, 7]]
         var_domain = [x.cur_domain() for x in curr_vars]
+        print(var_domain)
+        print()
+        print(answer)
         for i in range(len(curr_vars)):
             if var_domain[i] != answer[i]:
                 details = "Failed simple GAC test: variable domains don't match expected results."
@@ -100,7 +103,11 @@ def three_queen_GAC(stu_propagators):
         answer = [[4],[6, 7, 8],[1],[3, 8],[6, 7],[2, 8],[2, 3, 7, 8],[5]]
         var_vals = [x.cur_domain() for x in curr_vars]
 
+        print(var_vals)
+        print()
+        print(answer)
         if var_vals != answer:
+
             details = "Failed three queens GAC test: variable domains don't match expected results"
 
         else:
@@ -149,25 +156,25 @@ def main(stu_propagators=None):
     total += score
     print(details)
     print("---finished test_simple_FC---\n")
-
-    print("---starting test_simple_GAC---")
-    score,details = test_simple_GAC(stu_propagators)
-    total += score
-    print(details)
-    print("---finished test_simple_GAC---\n")
-
+    #
+    # print("---starting test_simple_GAC---")
+    # score,details = test_simple_GAC(stu_propagators)
+    # total += score
+    # print(details)
+    # print("---finished test_simple_GAC---\n")
+    #
     print("---starting three_queen_FC---")
     score,details = three_queen_FC(stu_propagators)
     total += score
     print(details)
     print("---finished three_queen_FC---\n")
 
-    print("---starting three_queen_GAC---")
-    score,details = three_queen_GAC(stu_propagators)
-    total += score
-    print(details)
-    print("---finished three_queen_GAC---\n")
-    print("Total score %d/4\n" % total)
+    # print("---starting three_queen_GAC---")
+    # score,details = three_queen_GAC(stu_propagators)
+    # total += score
+    # print(details)
+    # print("---finished three_queen_GAC---\n")
+    # print("Total score %d/4\n" % total)
 
 
 if __name__=="__main__":
