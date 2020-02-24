@@ -160,12 +160,11 @@ def prop_GAC(csp, newVar=None):
                         # print("Pruned value {} for {}".format(d, v))
                         v.prune_value(d)
                         pruned.append((v, d))
-                        if v.cur_domain_size == 0:
+                        if v.cur_domain_size() == 0:
                             GACQueue.clear()
                             return False
                         else:
                             for c_prime in nGACQueue:
-                                # print(v,  c_prime.get_scope())
                                 if v in c_prime.get_scope():
                                     GACQueue.append(c_prime)
                                     nGACQueue.remove(c_prime)
