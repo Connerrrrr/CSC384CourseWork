@@ -90,13 +90,12 @@ def prop_BT(csp, newVar=None):
     return True, []
 
 
+# TODO: Remove Commented lines
 def prop_FC(csp, newVar=None):
     '''Do forward checking. That is check constraints with 
        only one uninstantiated variable. Remember to keep 
        track of all pruned variable,value pairs and return '''
     #IMPLEMENT
-    pruned = []
-
     if not newVar:
         constraints = csp.get_all_cons()
     else:
@@ -132,6 +131,7 @@ def prop_FC(csp, newVar=None):
     return True, []
 
 
+# TODO: Remove Commented lines
 def prop_GAC(csp, newVar=None):
     '''Do GAC propagation. If newVar is None we do initial GAC enforce 
        processing all constraints. Otherwise we do GAC enforce with
@@ -176,6 +176,7 @@ def prop_GAC(csp, newVar=None):
     return True, []
 
 
+# TODO: Add comments
 def ord_mrv(csp):
     ''' return variable according to the Minimum Remaining Values heuristic '''
     #IMPLEMENT
