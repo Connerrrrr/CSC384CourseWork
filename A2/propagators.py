@@ -95,41 +95,40 @@ def prop_FC(csp, newVar=None):
        only one uninstantiated variable. Remember to keep 
        track of all pruned variable,value pairs and return '''
     #IMPLEMENT
-    if not newVar:
-        return True, []
+    pruned = []
 
-    def prop_FCCheck(C, x):
+    if not newVar:
+        constraints = csp.get_all_cons()
+    else:
+        constraints = csp.get_cons_with_var(newVar)
+
+    def prop_FCCheck(C, x_in):
         '''Return False if DWO, and True otherwise'''
-        domain = x.cur_domain()
-        for d in domain:
+        domain = x_in.cur_domain()
+        for d_x in domain:
             # assign d to provided var
-            x.assign(d)
+            x_in.assign(d_x)
             # get all the vals for vars
             vals = []
-            vars = C.get_scope()
-            for var in vars:
+            variables = C.get_scope()
+            for var in variables:
                 vals.append(var.get_assigned_value())
             # if falsifies, prune current value
             if not C.check(vals):
-                x.prune_value(d)
-            x.unassign()
-        if x.cur_domain_size() == 0:
+                # print("Pruned value {} for {}".format(x_in, d_x))
+                x_in.prune_value(d_x)
+            x_in.unassign()
+        if x_in.cur_domain_size() == 0:
             return False
         return True
 
-    for c in csp.get_cons_with_var(newVar):
-        DWOoccured = False
-
+    for c in constraints:
         if c.get_n_unasgn() == 1:
             # get only one unassigned variable x
             x = c.get_unasgn_vars()[0]
-
             if not prop_FCCheck(c, x):
-                DWOoccured = True
                 break
 
-            if DWOoccured:
-                return False, []
     return True, []
 
 
@@ -138,56 +137,42 @@ def prop_GAC(csp, newVar=None):
        processing all constraints. Otherwise we do GAC enforce with
        constraints containing newVar on GAC Queue'''
     #IMPLEMENT
-    for var in csp.get_all_vars():
-        print(var, var.cur_domain())
-    print()
+    # for var in csp.get_all_vars():
+    #     print(var, var.cur_domain())
+    # print()
     if newVar:
         GACQueue = csp.get_cons_with_var(newVar)
     else:
         GACQueue = csp.get_all_cons()
     nGACQueue = []
+
     # GAC Enforce helper
     def prop_GAC_Enforce():
         '''Return False if DWO, and True otherwise'''
         while len(GACQueue) > 0:
             c = GACQueue.pop(0)
+            nGACQueue.append(c)
+            # print(c.__str__())
             for v in c.get_scope():
                 for d in v.cur_domain():
                     if not c.has_support(v, d):
-                        print("Pruned value {} for {}".format(d, v))
+                        # print("Pruned value {} for {}".format(d, v))
                         v.prune_value(d)
                         if v.cur_domain_size == 0:
                             GACQueue.clear()
-                            print(False)
                             return False
                         else:
                             for c_prime in nGACQueue:
+                                # print(v,  c_prime.get_scope())
                                 if v in c_prime.get_scope():
-                                    GACQueue.append(c)
-                                    nGACQueue.remove(c)
-        print(True)
+                                    GACQueue.append(c_prime)
+                                    nGACQueue.remove(c_prime)
+                                    # print("Moved {} to GACQueue".format(c.__str__()))
+            # print()
         return True
 
-    # if not newVar:
-    #     return True, []
-
-    v = ord_mrv(csp)
-    curDom = v.domain()
-    print(curDom)
-    for d in curDom:
-
-        prune_list = []
-        for val in curDom:
-            if val != d:
-                prune_list.append(val)
-
-        for c in nGACQueue:
-            if v in c.get_scope():
-                GACQueue.append(c)
-                nGACQueue.remove(c)
-
-        if prop_GAC_Enforce():
-            prop_GAC(csp)
+    if not prop_GAC_Enforce():
+        return False, []
     return True, []
 
 
