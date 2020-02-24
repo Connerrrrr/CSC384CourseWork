@@ -25,10 +25,12 @@ cell of the Futoshiki puzzle.
 from cspbase import *
 import itertools
 
-def futoshiki_csp_model_1(futo_grid):
+def futoshiki_csp_model_1(futo_grid: object) -> object:
     ##IMPLEMENT
+    pass
     
 
 def futoshiki_csp_model_2(futo_grid):
-    ##IMPLEMENT 
+    ##IMPLEMENT
+    pass
     

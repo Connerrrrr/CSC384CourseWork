@@ -142,9 +142,10 @@ def prop_GAC(csp, newVar=None):
     # print()
     if newVar:
         GACQueue = csp.get_cons_with_var(newVar)
+        nGACQueue = [item for item in csp.get_all_cons() if item not in GACQueue]
     else:
         GACQueue = csp.get_all_cons()
-    nGACQueue = []
+        nGACQueue = []
 
     # GAC Enforce helper
     def prop_GAC_Enforce():
