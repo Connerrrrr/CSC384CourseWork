@@ -82,8 +82,6 @@ def futoshiki_csp_model_2(futo_grid):
             # Get all possible tuples
             sat_tuples = []
             for possible_tup in itertools.product(dom, repeat=len(dom)):
-                int_matched = True
-                print(possible_tup)
                 if all_diff_checker(possible_tup):
                     # check if domain matches
                     domain_matched = True
