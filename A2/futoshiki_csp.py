@@ -53,14 +53,18 @@ def futoshiki_csp_model_2(futo_grid):
         temp_row = []
         var_row = []
         for element in row:
-            if isinstance(element, int) and element:
-                temp_row.append(element)
-            # create variable
-            if not element:
+            if isinstance(element, int):
                 var_num += 1
-                variable = Variable('Grid{}'.format(var_num), dom)
-                var_row.append(variable)
+
+                # create variable
+                if element:
+                    variable = Variable('Grid{}'.format(var_num), [element])
+                    variable1 = Variable('Grid{}'.format(var_num), [element])
+                else:
+                    variable = Variable('Grid{}'.format(var_num), dom)
+                    variable1 = Variable('Grid{}'.format(var_num), dom)
                 variables.append(variable)
+                # temp row for var matrix
                 temp_row.append(variable)
         matrix.append(temp_row)
 
@@ -74,22 +78,20 @@ def futoshiki_csp_model_2(futo_grid):
             # Get all variables
             var_list = []
             for element in mat[row_index]:
-                if not isinstance(element, int):
-                    var_list.append(element)
+                var_list.append(element)
             # Get all possible tuples
             sat_tuples = []
-            for inner_row in itertools.product(dom, repeat=len(dom)):
-                sat_tuple = []
+            for possible_tup in itertools.product(dom, repeat=len(dom)):
                 int_matched = True
-                if all_diff_checker(inner_row):
-                    for index in range(len(inner_row)):
-                        if isinstance(mat[row_index][index], int):
-                            if mat[row_index][index] != inner_row[index]:
-                                int_matched = False
-                        else:
-                            sat_tuple.append(inner_row[index])
-                    if int_matched:
-                        sat_tuples.append(tuple(sat_tuple))
+                print(possible_tup)
+                if all_diff_checker(possible_tup):
+                    # check if domain matches
+                    domain_matched = True
+                    for index in range(len(possible_tup)):
+                        if possible_tup[index] not in mat[row_index][index].domain():
+                            domain_matched = False
+                    if domain_matched:
+                        sat_tuples.append(possible_tup)
             # Create Constraint Object
             con = Constraint("{}{}".format(direction, row_index + 1), var_list)
             con.add_satisfying_tuples(sat_tuples)
@@ -119,57 +121,27 @@ def futoshiki_csp_model_2(futo_grid):
                 inequality_var_list = []
                 inequality_count += 1
                 sat_tuples = []
-                # if two variables involve
-                if not isinstance(left, int) and not isinstance(right, int):
-                    inequality_var_list.append(left)
-                    inequality_var_list.append(right)
-                    # situation with var1 > var2
-                    if operand == ">":
-                        for tup in itertools.product(dom, repeat=2):
-                            if tup[0] > tup[1]:
-                                sat_tuples.append(tup)
-                    # situation with var1 < var2
-                    else:
-                        for tup in itertools.product(dom, repeat=2):
-                            if tup[0] < tup[1]:
-                                sat_tuples.append(tup)
-                    con = Constraint("Inequality{}".format(inequality_count), inequality_var_list)
-                    con.add_satisfying_tuples(sat_tuples)
-                    cons.append(con)
 
-                # right is variable
-                elif not isinstance(right, int):
-                    inequality_var_list.append(right)
-                    # situation with int > var
-                    if operand == ">":
-                        for val in right.domain():
-                            if left > val:
-                                sat_tuples.append(tuple([val]))
-                    # situation with int < var
-                    else:
-                        for val in right.domain():
-                            if left < val:
-                                sat_tuples.append(tuple([val]))
-                    con = Constraint("Inequality{}".format(inequality_count), inequality_var_list)
-                    con.add_satisfying_tuples(sat_tuples)
-                    cons.append(con)
+                # Get var list ready
+                inequality_var_list.append(left)
+                inequality_var_list.append(right)
 
-                # left is variable
+                # situation with var1 > var2
+                if operand == ">":
+                    for tup in itertools.product(dom, repeat=2):
+                        if tup[0] > tup[1]:
+                            sat_tuples.append(tup)
+
+                # situation with var1 < var2
                 else:
-                    inequality_var_list.append(left)
-                    # situation with var > int
-                    if operand == ">":
-                        for val in right.domain():
-                            if val > right:
-                                sat_tuples.append(tuple([val]))
-                    # situation with var < int
-                    else:
-                        for val in right.domain():
-                            if val < right:
-                                sat_tuples.append(tuple([val]))
-                    con = Constraint("Inequality{}".format(inequality_count), inequality_var_list)
-                    con.add_satisfying_tuples(sat_tuples)
-                    cons.append(con)
+                    for tup in itertools.product(dom, repeat=2):
+                        if tup[0] < tup[1]:
+                            sat_tuples.append(tup)
+
+                # Create Constrain object and append it to constraint list
+                con = Constraint("Inequality{}".format(inequality_count), inequality_var_list)
+                con.add_satisfying_tuples(sat_tuples)
+                cons.append(con)
 
     csp = CSP("Futoshiki", variables)
     for c in cons:
