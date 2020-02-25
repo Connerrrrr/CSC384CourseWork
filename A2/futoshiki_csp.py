@@ -28,9 +28,24 @@ import itertools
 def futoshiki_csp_model_1(futo_grid: object) -> object:
     ##IMPLEMENT
     pass
-    
+
 
 def futoshiki_csp_model_2(futo_grid):
     ##IMPLEMENT
-    pass
-    
+    dim = len(futo_grid)
+    dom = []
+    for i in range(dim):
+        dom.append(i + 1)
+    print(dom)
+
+    variables = []
+    var_num = 0
+    for row in futo_grid:
+        for element in row:
+            if not element:
+                var_num += 1
+                variables.append(Variable('Grid{}'.format(var_num), dom))
+    print(variables)
+
+    csp = CSP("Futoshiki", variables)
+    return csp

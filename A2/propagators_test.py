@@ -15,11 +15,9 @@ def nQueens(n):
     dom = []
     for i in range(n):
         dom.append(i+1)
-
     vars = []
     for i in dom:
         vars.append(Variable('Q{}'.format(i), dom))
-
     cons = []
     for qi in range(len(dom)):
         for qj in range(qi+1, len(dom)):
@@ -28,6 +26,7 @@ def nQueens(n):
             for t in itertools.product(dom, dom):
                 if queensCheck(qi, qj, t[0], t[1]):
                     sat_tuples.append(t)
+            print(sat_tuples)
             con.add_satisfying_tuples(sat_tuples)
             cons.append(con)
 
