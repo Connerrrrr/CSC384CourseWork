@@ -51,6 +51,7 @@ def futoshiki_csp_model_2(futo_grid):
     matrix = []
     for row in futo_grid:
         temp_row = []
+        var_row = []
         for element in row:
             if isinstance(element, int) and element:
                 temp_row.append(element)
@@ -58,6 +59,7 @@ def futoshiki_csp_model_2(futo_grid):
             if not element:
                 var_num += 1
                 variable = Variable('Grid{}'.format(var_num), dom)
+                var_row.append(variable)
                 variables.append(variable)
                 temp_row.append(variable)
         matrix.append(temp_row)
@@ -66,10 +68,6 @@ def futoshiki_csp_model_2(futo_grid):
     cons = []
     # Get transpose of int matrix to check column all diff
     transpose_matrix = [list(i) for i in zip(*matrix)]
-    # TODO: Delete print
-    print(matrix)
-    print(transpose_matrix)
-    print()
 
     def getAllDiff(mat, direction):
         for row_index in range(len(mat)):
@@ -93,7 +91,7 @@ def futoshiki_csp_model_2(futo_grid):
                     if int_matched:
                         sat_tuples.append(tuple(sat_tuple))
             # Create Constraint Object
-            con = Constraint("{}{}".format(direction, row_index), var_list)
+            con = Constraint("{}{}".format(direction, row_index + 1), var_list)
             con.add_satisfying_tuples(sat_tuples)
             cons.append(con)
 
@@ -103,13 +101,77 @@ def futoshiki_csp_model_2(futo_grid):
     # AllDiff in column
     getAllDiff(transpose_matrix, "Column")
 
-    # TODO: Delete print
-    for con in cons:
-        print(con.__str__())
-        print(con.sat_tuples)
-        print("---------------------------------------")
-
     # Inequality Constraint
+    inequality_count = 0
+    for i in range(len(futo_grid)):
+        for j in range(len(futo_grid[i])):
+            if futo_grid[i][j] in ["<", ">"]:
+                operand = futo_grid[i][j]
+                left = futo_grid[i][j - 1]
+                right = futo_grid[i][j + 1]
+                # Get the variable object from matrix
+                if right == 0:
+                    right = matrix[i][(j + 1) // 2]
+                if left == 0:
+                    left = matrix[i][(j - 1) // 2]
+
+                # Satisfying Tuples
+                inequality_var_list = []
+                inequality_count += 1
+                sat_tuples = []
+                # if two variables involve
+                if not isinstance(left, int) and not isinstance(right, int):
+                    inequality_var_list.append(left)
+                    inequality_var_list.append(right)
+                    # situation with var1 > var2
+                    if operand == ">":
+                        for tup in itertools.product(dom, repeat=2):
+                            if tup[0] > tup[1]:
+                                sat_tuples.append(tup)
+                    # situation with var1 < var2
+                    else:
+                        for tup in itertools.product(dom, repeat=2):
+                            if tup[0] < tup[1]:
+                                sat_tuples.append(tup)
+                    con = Constraint("Inequality{}".format(inequality_count), inequality_var_list)
+                    con.add_satisfying_tuples(sat_tuples)
+                    cons.append(con)
+
+                # right is variable
+                elif not isinstance(right, int):
+                    inequality_var_list.append(right)
+                    # situation with int > var
+                    if operand == ">":
+                        for val in right.domain():
+                            if left > val:
+                                sat_tuples.append(tuple([val]))
+                    # situation with int < var
+                    else:
+                        for val in right.domain():
+                            if left < val:
+                                sat_tuples.append(tuple([val]))
+                    con = Constraint("Inequality{}".format(inequality_count), inequality_var_list)
+                    con.add_satisfying_tuples(sat_tuples)
+                    cons.append(con)
+
+                # left is variable
+                else:
+                    inequality_var_list.append(left)
+                    # situation with var > int
+                    if operand == ">":
+                        for val in right.domain():
+                            if val > right:
+                                sat_tuples.append(tuple([val]))
+                    # situation with var < int
+                    else:
+                        for val in right.domain():
+                            if val < right:
+                                sat_tuples.append(tuple([val]))
+                    con = Constraint("Inequality{}".format(inequality_count), inequality_var_list)
+                    con.add_satisfying_tuples(sat_tuples)
+                    cons.append(con)
 
     csp = CSP("Futoshiki", variables)
-    return csp
+    for c in cons:
+        csp.add_constraint(c)
+    return csp, matrix
