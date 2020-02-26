@@ -115,10 +115,11 @@ def prop_FC(csp, newVar=None):
                 vals.append(var.get_assigned_value())
             # if falsifies, prune current value
             if not C.check(vals):
-                # print("Pruned value {} for {}".format(x_in, d_x))
                 x_in.prune_value(d_x)
                 pruned.append((x_in, d_x))
+            # unassign the current value in order to be able assign during next iteration
             x_in.unassign()
+        # DWO occurs
         if x_in.cur_domain_size() == 0:
             return False
         return True
@@ -153,23 +154,22 @@ def prop_GAC(csp, newVar=None):
         while len(GACQueue) > 0:
             c = GACQueue.pop(0)
             nGACQueue.append(c)
-            # print(c.__str__())
             for v in c.get_scope():
                 for d in v.cur_domain():
                     if not c.has_support(v, d):
-                        # print("Pruned value {} for {}".format(d, v))
                         v.prune_value(d)
                         pruned.append((v, d))
+
+                        # DWO occurs
                         if v.cur_domain_size() == 0:
                             GACQueue.clear()
                             return False
                         else:
+                            # Enqueue the relevant constraints that is not in the GACQueue
                             for c_prime in nGACQueue:
                                 if v in c_prime.get_scope():
                                     GACQueue.append(c_prime)
                                     nGACQueue.remove(c_prime)
-                                    # print("Moved {} to GACQueue".format(c.__str__()))
-            # print()
         return True
 
     if not prop_GAC_Enforce():
@@ -181,10 +181,12 @@ def prop_GAC(csp, newVar=None):
 def ord_mrv(csp):
     ''' return variable according to the Minimum Remaining Values heuristic '''
     #IMPLEMENT
-    vars = csp.get_all_unasgn_vars()
+    # Implemented as described in lecture note
+    variables = csp.get_all_unasgn_vars()
     smallest_dom_size = float("inf")
     result = None
-    for var in vars:
+    # Get the smallest domain size and return its corresponding variable
+    for var in variables:
         if var.cur_domain_size() < smallest_dom_size:
             smallest_dom_size = var.cur_domain_size()
             result = var
