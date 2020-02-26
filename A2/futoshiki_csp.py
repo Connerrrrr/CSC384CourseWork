@@ -25,7 +25,8 @@ cell of the Futoshiki puzzle.
 from cspbase import *
 import itertools
 
-def futoshiki_csp_model_1(futo_grid: object) -> object:
+
+def futoshiki_csp_model_1(futo_grid):
     ##IMPLEMENT
     # DOMAIN
     dim = len(futo_grid)
@@ -39,18 +40,14 @@ def futoshiki_csp_model_1(futo_grid: object) -> object:
     matrix = []
     for row in futo_grid:
         temp_row = []
-        var_row = []
         for element in row:
             if isinstance(element, int):
                 var_num += 1
-
                 # create variable
                 if element:
                     variable = Variable('Grid{}'.format(var_num), [element])
-                    variable1 = Variable('Grid{}'.format(var_num), [element])
                 else:
                     variable = Variable('Grid{}'.format(var_num), dom)
-                    variable1 = Variable('Grid{}'.format(var_num), dom)
                 variables.append(variable)
                 # temp row for var matrix
                 temp_row.append(variable)
@@ -61,13 +58,64 @@ def futoshiki_csp_model_1(futo_grid: object) -> object:
     # Transpose matrix for column pair-wise
     transpose_matrix = [list(i) for i in zip(*matrix)]
 
+    def getbinaryconstraints(mat):
+        for mat_row in mat:
+            for a in range(len(mat_row)):
+                for b in range(a + 1, len(mat_row)):
+                    # For every binary constraint
+                    sat_tuples = []
+                    for possible_tup in itertools.product(dom, repeat=2):
+                        if possible_tup[0] != possible_tup[1]:
+                            sat_tuples.append(possible_tup)
+                    # Create row-wise binary constraint and add tuples to it
+                    con = Constraint("C(Q{},Q{})".format(mat_row[a], mat_row[b]), [mat_row[a], mat_row[b]])
+                    con.add_satisfying_tuples(sat_tuples)
+                    cons.append(con)
+
     # row-wise binary constraint
-    for i in range(len(matrix)):
-        for j in range(len(matrix)):
-            
+    getbinaryconstraints(matrix)
+
+    # column-wise binary constraint
+    getbinaryconstraints(transpose_matrix)
+
+    # Inequality Constraint
+    inequality_count = 0
+    for i in range(len(futo_grid)):
+        for j in range(len(futo_grid[i])):
+            if futo_grid[i][j] in ["<", ">"]:
+                operand = futo_grid[i][j]
+                # Get the variable object from matrix
+                right = matrix[i][(j + 1) // 2]
+                left = matrix[i][(j - 1) // 2]
+
+                # Satisfying Tuples
+                inequality_var_list = []
+                inequality_count += 1
+                sat_tuples = []
+
+                # Get var list ready
+                inequality_var_list.append(left)
+                inequality_var_list.append(right)
+
+                # situation with var1 > var2
+                if operand == ">":
+                    for tup in itertools.product(dom, repeat=2):
+                        if tup[0] > tup[1]:
+                            sat_tuples.append(tup)
+
+                # situation with var1 < var2
+                else:
+                    for tup in itertools.product(dom, repeat=2):
+                        if tup[0] < tup[1]:
+                            sat_tuples.append(tup)
+
+                # Create Constrain object and append it to constraint list
+                con = Constraint("Inequality{}".format(inequality_count), inequality_var_list)
+                con.add_satisfying_tuples(sat_tuples)
+                cons.append(con)
 
     # CSP obejct
-    csp = CSP("Futoshiki", variables)
+    csp = CSP("Futoshiki-Model1", variables)
     for c in cons:
         csp.add_constraint(c)
     return csp, matrix
@@ -94,18 +142,14 @@ def futoshiki_csp_model_2(futo_grid):
     matrix = []
     for row in futo_grid:
         temp_row = []
-        var_row = []
         for element in row:
             if isinstance(element, int):
                 var_num += 1
-
                 # create variable
                 if element:
                     variable = Variable('Grid{}'.format(var_num), [element])
-                    variable1 = Variable('Grid{}'.format(var_num), [element])
                 else:
                     variable = Variable('Grid{}'.format(var_num), dom)
-                    variable1 = Variable('Grid{}'.format(var_num), dom)
                 variables.append(variable)
                 # temp row for var matrix
                 temp_row.append(variable)
@@ -117,6 +161,7 @@ def futoshiki_csp_model_2(futo_grid):
     transpose_matrix = [list(i) for i in zip(*matrix)]
 
     def getAllDiff(mat, direction):
+        '''Create row-wise and column-wise AllDiff constraint and append them into constraint list'''
         for row_index in range(len(mat)):
             # Get all variables
             var_list = []
@@ -150,13 +195,9 @@ def futoshiki_csp_model_2(futo_grid):
         for j in range(len(futo_grid[i])):
             if futo_grid[i][j] in ["<", ">"]:
                 operand = futo_grid[i][j]
-                left = futo_grid[i][j - 1]
-                right = futo_grid[i][j + 1]
                 # Get the variable object from matrix
-                if right == 0:
-                    right = matrix[i][(j + 1) // 2]
-                if left == 0:
-                    left = matrix[i][(j - 1) // 2]
+                right = matrix[i][(j + 1) // 2]
+                left = matrix[i][(j - 1) // 2]
 
                 # Satisfying Tuples
                 inequality_var_list = []
@@ -184,7 +225,7 @@ def futoshiki_csp_model_2(futo_grid):
                 con.add_satisfying_tuples(sat_tuples)
                 cons.append(con)
 
-    csp = CSP("Futoshiki", variables)
+    csp = CSP("Futoshiki-Model2", variables)
     for c in cons:
         csp.add_constraint(c)
     return csp, matrix

@@ -26,17 +26,17 @@ if __name__ == "__main__":
         else:
             print("Failed first model test: wrong solution")
         # 2nd model test
-        # csp2, var_array2 = futoshiki_csp_model_2(board_2)
-        # solver = BT(csp2)
-        # solver.bt_search(prop_BT)
-        # for i in range(len(var_array2)):
-        #     for j in range(len(var_array2)):
-        #         if var_array2[i][j].get_assigned_value() is not None:
-        #             score = 0
-        # if score == 1:
-        #     print("Passed second model test")
-        # else:
-        #     print("Failed second model test: 'solved' unsolvable problem")
+        csp2, var_array2 = futoshiki_csp_model_2(board_2)
+        solver = BT(csp2)
+        solver.bt_search(prop_BT)
+        for i in range(len(var_array2)):
+            for j in range(len(var_array2)):
+                if var_array2[i][j].get_assigned_value() is not None:
+                    score = 0
+        if score == 1:
+            print("Passed second model test")
+        else:
+            print("Failed second model test: 'solved' unsolvable problem")
 
     if test_ord_mrv:
 
