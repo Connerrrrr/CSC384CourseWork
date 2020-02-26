@@ -2,13 +2,16 @@ from cspbase import *
 from futoshiki_csp import *
 from propagators import *
 
-test_ord_mrv = False;
+test_ord_mrv = True;
 test_model = True;
 
 # board_1 = [[1, '<', 0, '.', 0], [0, '.', 0, '.', 2], [2, '.', 0, '>', 0]]
 # answer_1 = [1, 2, 3, 3, 1, 2, 2, 3, 1]
+
+# Self-Check solution
 board_1 = [[3, '.', 0, '.', 0, '.', 2], [0, '.', 0, '.', 1, '.', 0], [0, '.', 0, '.', 0, '>', 0], [0, '.', 4, '.', 0, '.', 0]]
 answer_1 = [3, 1, 4, 2, 2, 3, 1, 4, 4, 2, 3, 1, 1, 4, 2, 3]
+
 board_2 = [[1, '>', 0, '.', 3], [0, '.', 0, '.', 0], [3, '<', 0, '.', 1]]
 
 if __name__ == "__main__":
@@ -16,7 +19,7 @@ if __name__ == "__main__":
     if test_model:
         score = 1
         # 1st model test
-        csp, var_array = futoshiki_csp_model_2(board_1)
+        csp, var_array = futoshiki_csp_model_1(board_1)
         solver = BT(csp)
         solver.bt_search(prop_BT)
         sol = []
