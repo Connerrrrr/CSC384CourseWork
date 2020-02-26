@@ -27,7 +27,50 @@ import itertools
 
 def futoshiki_csp_model_1(futo_grid: object) -> object:
     ##IMPLEMENT
-    pass
+    # DOMAIN
+    dim = len(futo_grid)
+    dom = []
+    for i in range(dim):
+        dom.append(i + 1)
+
+    # VARIABLE
+    variables = []
+    var_num = 0
+    matrix = []
+    for row in futo_grid:
+        temp_row = []
+        var_row = []
+        for element in row:
+            if isinstance(element, int):
+                var_num += 1
+
+                # create variable
+                if element:
+                    variable = Variable('Grid{}'.format(var_num), [element])
+                    variable1 = Variable('Grid{}'.format(var_num), [element])
+                else:
+                    variable = Variable('Grid{}'.format(var_num), dom)
+                    variable1 = Variable('Grid{}'.format(var_num), dom)
+                variables.append(variable)
+                # temp row for var matrix
+                temp_row.append(variable)
+        matrix.append(temp_row)
+
+    # Constraint
+    cons = []
+    # Transpose matrix for column pair-wise
+    transpose_matrix = [list(i) for i in zip(*matrix)]
+
+    # row-wise binary constraint
+    for i in range(len(matrix)):
+        for j in range(len(matrix)):
+            
+
+    # CSP obejct
+    csp = CSP("Futoshiki", variables)
+    for c in cons:
+        csp.add_constraint(c)
+    return csp, matrix
 
 
 def futoshiki_csp_model_2(futo_grid):
@@ -77,8 +120,8 @@ def futoshiki_csp_model_2(futo_grid):
         for row_index in range(len(mat)):
             # Get all variables
             var_list = []
-            for element in mat[row_index]:
-                var_list.append(element)
+            for elem in mat[row_index]:
+                var_list.append(elem)
             # Get all possible tuples
             sat_tuples = []
             for possible_tup in itertools.product(dom, repeat=len(dom)):
