@@ -55,32 +55,46 @@ def select_move_minimax(board, color, limit, caching=0):
     If caching is OFF (i.e. 0), do NOT use state caching to reduce the number of state evaluations.    
     """
     # IMPLEMENT
+    best_utility, best_move = minimax(board, color, limit)
+    return best_move
+
+
+def minimax(board, color, limit):
     possible_moves = get_possible_moves(board, color)
     if len(possible_moves) == 0 or limit == 0:
-        return compute_utility(board, color)
+        # fixed utility in the end
+        return compute_utility(board, 1), None
 
+    best_move = None
     # max for player 1
     if color == 1:
-        maxUntility = -float('inf')
+        maxUtility = -float('inf')
         for move in possible_moves:
-            # TODO: Create deep copy of the board and add the child move in the new board
+            # Get the new board
             (column, row) = move
-            new_board = []
-            for i in board:
-                for j in board[i]:
-                    new_board[i][j] = board[i][j]
-            untility = select_move_minimax(new_board, 2, limit - 1)
-            maxUntility = max(maxUntility, untility)
-        return maxUntility
+            new_board = play_move(board, color, column, row)
+
+            # Compute utility
+            utility, _ = minimax(new_board, 2, limit - 1)
+            if utility > maxUtility:
+                best_move = move
+            maxUtility = max(maxUtility, utility)
+        return maxUtility, best_move
 
     # min for player 2
     else:
-        minUntility = float('inf')
+        minUtility = float('inf')
         for move in possible_moves:
-            untility = select_move_minimax(board, 1, limit - 1)
-            minUntility = min(minUntility, untility)
-        return minUntility
+            # Get the new board
+            (column, row) = move
+            new_board = play_move(board, color, column, row)
 
+            # Compute utility
+            utility, _ = minimax(new_board, 1, limit - 1)
+            if utility < minUtility:
+                best_move = move
+            minUtility = min(minUtility, utility)
+        return minUtility, best_move
 
 ############ ALPHA-BETA PRUNING #####################
 def alphabeta_min_node(board, color, alpha, beta, limit, caching=0, ordering=0):
