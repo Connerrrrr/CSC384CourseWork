@@ -29,7 +29,7 @@ test_compute_utility = True
 # test_minimax_max_node_2 = True
 # test_caching_big = True
 # test_ordering = True
-# test_select_move_minimax = True
+test_select_move_minimax = True
 # test_select_move_alphabeta = True
 # test_select_move_equal = True
 
@@ -44,7 +44,7 @@ test_minimax_min_node_2 = False
 test_minimax_max_node_2 = False
 test_caching_big = False
 test_ordering = False
-test_select_move_minimax = False
+# test_select_move_minimax = False
 test_select_move_alphabeta = False
 test_select_move_equal = False
 

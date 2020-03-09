@@ -55,7 +55,31 @@ def select_move_minimax(board, color, limit, caching=0):
     If caching is OFF (i.e. 0), do NOT use state caching to reduce the number of state evaluations.    
     """
     # IMPLEMENT
-    return (0, 0)  # change this!
+    possible_moves = get_possible_moves(board, color)
+    if len(possible_moves) == 0 or limit == 0:
+        return compute_utility(board, color)
+
+    # max for player 1
+    if color == 1:
+        maxUntility = -float('inf')
+        for move in possible_moves:
+            # TODO: Create deep copy of the board and add the child move in the new board
+            (column, row) = move
+            new_board = []
+            for i in board:
+                for j in board[i]:
+                    new_board[i][j] = board[i][j]
+            untility = select_move_minimax(new_board, 2, limit - 1)
+            maxUntility = max(maxUntility, untility)
+        return maxUntility
+
+    # min for player 2
+    else:
+        minUntility = float('inf')
+        for move in possible_moves:
+            untility = select_move_minimax(board, 1, limit - 1)
+            minUntility = min(minUntility, untility)
+        return minUntility
 
 
 ############ ALPHA-BETA PRUNING #####################
