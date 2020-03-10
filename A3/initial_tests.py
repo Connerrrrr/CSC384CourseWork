@@ -18,39 +18,46 @@ bigboards = [((0, 0, 0, 0, 0, 0), (0, 0, 2, 2, 0, 0), (0, 1, 1, 2, 2, 0), (2, 2,
 ((0, 0, 0, 0, 0, 0), (0, 0, 0, 2, 0, 0), (0, 1, 2, 1, 1, 0), (0, 2, 2, 2, 0, 0), (0, 1, 0, 0, 0, 0), (0, 0, 0, 0, 0, 0))]
 
 #Select what to test
-test_compute_utility = True
-# test_alphabeta_min_node_1 = True
-# test_alphabeta_max_node_1 = True
-# test_minimax_min_node_1 = True
-# test_minimax_max_node_1 = True
-# test_alphabeta_min_node_2 = True
-# test_alphabeta_max_node_2 = True
-# test_minimax_min_node_2 = True
-# test_minimax_max_node_2 = True
-# test_caching_big = True
+# test_compute_utility = True
+
+test_minimax_min_node_1 = True
+test_minimax_max_node_1 = True
+test_minimax_min_node_2 = True
+test_minimax_max_node_2 = True
+
+test_alphabeta_min_node_1 = True
+test_alphabeta_max_node_1 = True
+test_alphabeta_min_node_2 = True
+test_alphabeta_max_node_2 = True
+
+test_caching_big = True
 # test_ordering = True
-test_select_move_minimax = True
+# test_select_move_minimax = True
 # test_select_move_alphabeta = True
 # test_select_move_equal = True
 
-# test_compute_utility = False
-test_alphabeta_min_node_1 = False
-test_alphabeta_max_node_1 = False
-test_minimax_min_node_1 = False
-test_minimax_max_node_1 = False
-test_alphabeta_min_node_2 = False
-test_alphabeta_max_node_2 = False
-test_minimax_min_node_2 = False
-test_minimax_max_node_2 = False
-test_caching_big = False
+test_compute_utility = False
+
+# test_minimax_min_node_1 = False
+# test_minimax_max_node_1 = False
+# test_minimax_min_node_2 = False
+# test_minimax_max_node_2 = False
+
+# test_alphabeta_min_node_1 = False
+# test_alphabeta_max_node_1 = False
+# test_alphabeta_min_node_2 = False
+# test_alphabeta_max_node_2 = False
+
+# test_caching_big = False
 test_ordering = False
-# test_select_move_minimax = False
+test_select_move_minimax = False
 test_select_move_alphabeta = False
 test_select_move_equal = False
 
 if test_compute_utility:
 
     ##############################################################
+    print("-------------------------------------------")
     print('Testing Utility')
     correctvalues = [3, 3, 5, -2, 3, 0]
     correct = 0
@@ -72,7 +79,8 @@ if test_select_move_minimax:
       value1 = select_move_minimax(board, 1, 6)
       value2 = select_move_minimax(board, 2, 6)
       if (value1 == correctmoves_1[i] and value2 == correctmoves_2[i]):
-        correct+=1  
+        correct+=1
+    print("-------------------------------------------")
     print('Testing Minimax (no Depth Limit)')
     print("You computed correct minimax moves for {} of {} small boards".format(correct, len(correctmoves_1)))
 
@@ -85,7 +93,8 @@ if test_select_move_alphabeta:
       value1 = select_move_alphabeta(board, 1, 6)
       value2 = select_move_alphabeta(board, 2, 6)
       if (value1 == correctmoves_1[i] and value2 == correctmoves_2[i]):
-        correct+=1  
+        correct+=1
+    print("-------------------------------------------")
     print('Testing Alphabeta (no Depth Limit)')
     print("You computed correct alphabeta moves for {} of {} small boards".format(correct, len(correctmoves_1)))
   
@@ -102,16 +111,18 @@ if test_select_move_equal:
       if (value1_minimax == value1_ab == correctmoves_1[i] and value2_minimax == value2_ab == correctmoves_2[i]):
         correct+=1  
 
+    print("-------------------------------------------")
     print('Testing Minimax and Alphabeta Moves Equality (no Depth Limit)')
     print("You computed correct moves for {} of {} tests".format(correct, len(correctmoves_1)))
 
 if test_caching_big:
 
+    print("-------------------------------------------")
     print('Testing Caching Big')
     check_1 = 0
     check_2 = 0  
     for i in range(0,len(bigboards)):
-
+      print("Board number {}".format(i))
       start_time_1 = os.times()[0]
       no_cache = select_move_alphabeta(bigboards[i], 1, 6)
       end_time_1 = os.times()[0]
@@ -131,6 +142,7 @@ if test_caching_big:
     
 if test_ordering:
 
+    print("-------------------------------------------")
     print('Testing Ordering')
     check_1 = 0
     check_2 = 0  
@@ -157,6 +169,7 @@ if test_ordering:
 
 if test_alphabeta_min_node_1:
 
+    print("-------------------------------------------")
     print('Testing Alpha Beta Min Node - Player 1')
     answers = [((2,4),-10),((1,1),-4),((3,0),-6),((0,1),-8),((5,2),-6)]
     correct = 0
@@ -179,7 +192,7 @@ if test_alphabeta_min_node_1:
 
 
 if test_alphabeta_max_node_1:
-
+    print("-------------------------------------------")
     print('Testing Alpha Beta Max Node - Player 1')
     answers = [(),((5,5),8),((1,5),12),(),((3,4),4)]
     correct = 0
@@ -206,12 +219,13 @@ if test_minimax_min_node_1:
     ##############################################################
     # Must program some trees where we know cut set
     ##############################################################
-
+    print("-------------------------------------------")
     print('Testing Minimax Min Node - Player 1')
     answers = [((2,4),-10),((1,1),-4),((3,0),-6),((0,1),-8),((5,2),-6)]
     correct = 0
     correctval = 0
     for i in range(0,len(bigboards)):
+      print("Board number {}".format(i))
       board = bigboards[i]
 
       color = 1
@@ -221,27 +235,31 @@ if test_minimax_min_node_1:
 
       if (answer[0] == move[0] and answer[1] == move[1]):
         correct+=1
+      else:
+          print(answer, move)
       if (answer_value == value):
-        correctval+=1      
+        correctval+=1
+      else:
+        print(answer_value, value)
 
     print("You computed correct minimax min moves for {} of {} boards".format(correct, len(bigboards))) 
     print("You computed correct minimax min values for {} of {} boards".format(correctval, len(bigboards))) 
 
 if test_minimax_max_node_1:
-
+    print("-------------------------------------------")
     print('Testing Minimax Max Node - Player 1')  
     answers = [(),((5,5),8),((1,5),12),(),((3,4),4)]
     correct = 0
     correctval = 0
     selected = [1,2,4] #some boards have moves that are tied in value
     for i in selected:
+      print("Board number {}".format(i))
       board = bigboards[i]
 
       color = 1
       (move, value) = minimax_max_node(board, color, 1, 0)
       answer = answers[i][0]
       answer_value = answers[i][1]
-
       if (answer[0] == move[0] and answer[1] == move[1]):
         correct+=1
       if (answer_value == value):
@@ -251,7 +269,7 @@ if test_minimax_max_node_1:
     print("You computed correct minimax max values for {} of {} boards".format(correctval, len(selected))) 
 
 if test_alphabeta_min_node_2:
-
+    print("-------------------------------------------")
     print('Testing Alpha Beta Min Node - Player 2')
     answers = [((3,0),-6),((5,5),-8),((1,5),-12),((5,2),-2),((3,4),-4)]
     correct = 0
@@ -274,13 +292,14 @@ if test_alphabeta_min_node_2:
 
 
 if test_alphabeta_max_node_2:
-
+    print("-------------------------------------------")
     print('Testing Alpha Beta Max Node - Player 2')
     answers = [((0,0),0),((1,1),4),((3,0),6),((0,0),0),((5,2), 6),((0,0), 0)]
     correct = 0
     correctval = 0
     selected = [1,2,4] #some boards have moves that are tied in value
     for i in selected:
+      print("Board number {}".format(i))
       board = bigboards[i]
 
       color = 2
@@ -301,12 +320,13 @@ if test_minimax_min_node_2:
     ##############################################################
     # Must program some trees where we know cut set
     ##############################################################
-
+    print("-------------------------------------------")
     print('Testing Minimax Min Node - Player 2')
     answers = [((3,0),-6),((5,5),-8),((1,5),-12),((5,2),-2),((3,4),-4)]
     correct = 0
     correctval = 0
     for i in range(0,len(bigboards)):
+      print("Board number {}".format(i))
       board = bigboards[i]
 
       color = 2
@@ -323,13 +343,14 @@ if test_minimax_min_node_2:
     print("You computed correct minimax min values for {} of {} boards".format(correctval, len(bigboards))) 
 
 if test_minimax_max_node_2:
-
+    print("-------------------------------------------")
     print('Testing Minimax Max Node - Player 2')  
     answers = [((0,0),0),((1,1),4),((3,0),6),((0,0),0),((5,2), 6),((0,0), 0)]
     correct = 0
     correctval = 0
     selected = [1,2,4] #some boards have moves that are tied in value
     for i in selected:
+      print("Board number {}".format(i))
       board = bigboards[i]
 
       color = 2
