@@ -18,7 +18,7 @@ bigboards = [((0, 0, 0, 0, 0, 0), (0, 0, 2, 2, 0, 0), (0, 1, 1, 2, 2, 0), (2, 2,
 ((0, 0, 0, 0, 0, 0), (0, 0, 0, 2, 0, 0), (0, 1, 2, 1, 1, 0), (0, 2, 2, 2, 0, 0), (0, 1, 0, 0, 0, 0), (0, 0, 0, 0, 0, 0))]
 
 #Select what to test
-# test_compute_utility = True
+test_compute_utility = True
 
 test_minimax_min_node_1 = True
 test_minimax_max_node_1 = True
@@ -31,12 +31,12 @@ test_alphabeta_min_node_2 = True
 test_alphabeta_max_node_2 = True
 
 test_caching_big = True
-# test_ordering = True
-# test_select_move_minimax = True
-# test_select_move_alphabeta = True
-# test_select_move_equal = True
+test_ordering = True
+test_select_move_minimax = True
+test_select_move_alphabeta = True
+test_select_move_equal = True
 
-test_compute_utility = False
+# test_compute_utility = False
 
 # test_minimax_min_node_1 = False
 # test_minimax_max_node_1 = False
@@ -49,10 +49,10 @@ test_compute_utility = False
 # test_alphabeta_max_node_2 = False
 
 # test_caching_big = False
-test_ordering = False
-test_select_move_minimax = False
-test_select_move_alphabeta = False
-test_select_move_equal = False
+# test_ordering = False
+# test_select_move_minimax = False
+# test_select_move_alphabeta = False
+# test_select_move_equal = False
 
 if test_compute_utility:
 
@@ -71,17 +71,21 @@ if test_compute_utility:
     print("You computed correct utilities for {} of {} small boards".format(correct, len(correctvalues)))
 
 if test_select_move_minimax:
+    print("-------------------------------------------")
+    print('Testing Minimax (no Depth Limit)')
     correctmoves_1 = [(0,0),(2,3),(0,0),(3,0),(3,1), (0,3)]
     correctmoves_2 = [(3,3),(0,0),(3,3),(0,2),(3,1),(0,0)]
     correct = 0
     for i in range(0,len(smallboards)):
+      print("Board number {}".format(i))
       board = smallboards[i]
       value1 = select_move_minimax(board, 1, 6)
       value2 = select_move_minimax(board, 2, 6)
       if (value1 == correctmoves_1[i] and value2 == correctmoves_2[i]):
         correct+=1
-    print("-------------------------------------------")
-    print('Testing Minimax (no Depth Limit)')
+      else:
+          print(value1, value2)
+          print(correctmoves_1[i], correctmoves_2[i])
     print("You computed correct minimax moves for {} of {} small boards".format(correct, len(correctmoves_1)))
 
 if test_select_move_alphabeta:
@@ -89,11 +93,15 @@ if test_select_move_alphabeta:
     correctmoves_2 = [(3,3),(0,0),(3,3),(0,2),(3,1),(0,0)]
     correct = 0
     for i in range(0,len(smallboards)):
+      print("Board number {}".format(i))
       board = smallboards[i]
       value1 = select_move_alphabeta(board, 1, 6)
       value2 = select_move_alphabeta(board, 2, 6)
       if (value1 == correctmoves_1[i] and value2 == correctmoves_2[i]):
         correct+=1
+      else:
+        print(value1, value2)
+        print(correctmoves_1[i], correctmoves_2[i])
     print("-------------------------------------------")
     print('Testing Alphabeta (no Depth Limit)')
     print("You computed correct alphabeta moves for {} of {} small boards".format(correct, len(correctmoves_1)))
@@ -103,6 +111,7 @@ if test_select_move_equal:
     correctmoves_2 = [(3,3),(0,0),(3,3),(0,2),(3,1)]
     correct = 0
     for i in range(0,len(correctmoves_1)):
+      print("Board number {}".format(i))
       board = smallboards[i]
       value1_minimax = select_move_minimax(board, 1, 6)
       value2_minimax = select_move_minimax(board, 2, 6)
@@ -147,7 +156,7 @@ if test_ordering:
     check_1 = 0
     check_2 = 0  
     for i in range(0,len(bigboards)):
-
+      print("Board number {}".format(i))
       start_time_1 = os.times()[0]
       no_order = select_move_alphabeta(bigboards[i], 1, 6, 0, 0)
       end_time_1 = os.times()[0]
@@ -158,6 +167,9 @@ if test_ordering:
 
       if (end_time_1 - start_time_1) >= (end_time_2 - start_time_2):
         check_1 += 1
+      else:
+          print("With ordering: {}".format((end_time_2 - start_time_2)))
+          print("Without ordering: {}".format((end_time_1 - start_time_1)))
 
       if (with_order == no_order):
          print(with_order)

@@ -31,6 +31,23 @@ def compute_heuristic(board, color):  # not implemented, optional
     return 0  # change this!
 
 
+# TODO: Comments needed
+def ordered_moves(board, moves, color, current_player):
+    dic = dict()
+    result = []
+    for move in moves:
+        (column, row) = move
+        new_board = play_move(board, current_player, column, row)
+        successor_utility = compute_utility(new_board, color)
+        if successor_utility in dic and dic[successor_utility] != [move]:
+            dic[successor_utility].append(move)
+        else:
+            dic[successor_utility] = [move]
+    ordered_utility = sorted(list(dic.keys()), reverse=True)
+    for utility in ordered_utility:
+        result += dic[utility]
+    return result
+
 ############ MINIMAX ###############################
 # TODO: Simplify the minimax function and implement two functions below
 def minimax_min_node(board, color, limit, caching=0):
@@ -90,6 +107,7 @@ def minimax_max_node(board, color, limit, caching=0):  # returns highest possibl
     return best_move, maxUtility
 
 
+# TODO: Bugs here
 def select_move_minimax(board, color, limit, caching=0):
     """
     Given a board and a player color, decide on a move. 
@@ -124,7 +142,7 @@ def alphabeta_min_node(board, color, alpha, beta, limit, caching=0, ordering=0):
         return None, compute_utility(board, color)
 
     minUtility = float('inf')
-    for move in possible_moves:
+    for move in ordered_moves(board, possible_moves, color, opponent):
         # Get the new board
         (column, row) = move
         new_board = play_move(board, opponent, column, row)
@@ -154,7 +172,7 @@ def alphabeta_max_node(board, color, alpha, beta, limit, caching=0, ordering=0):
         return None, compute_utility(board, color)
 
     maxUtility = -float('inf')
-    for move in possible_moves:
+    for move in ordered_moves(board, possible_moves, color, color):
         # Get the new board
         (column, row) = move
         new_board = play_move(board, color, column, row)
@@ -172,6 +190,7 @@ def alphabeta_max_node(board, color, alpha, beta, limit, caching=0, ordering=0):
     return best_move, maxUtility
 
 
+# TODO: Bugs here
 def select_move_alphabeta(board, color, limit, caching=0, ordering=0):
     """
     Given a board and a player color, decide on a move. 
