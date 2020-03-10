@@ -84,11 +84,13 @@ if test_select_move_minimax:
       if (value1 == correctmoves_1[i] and value2 == correctmoves_2[i]):
         correct+=1
       else:
-          print(value1, value2)
-          print(correctmoves_1[i], correctmoves_2[i])
+          print("Answer: {} {}".format(value1, value2))
+          print("Solution: {} {}".format(correctmoves_1[i], correctmoves_2[i]))
     print("You computed correct minimax moves for {} of {} small boards".format(correct, len(correctmoves_1)))
 
 if test_select_move_alphabeta:
+    print("-------------------------------------------")
+    print('Testing Alphabeta (no Depth Limit)')
     correctmoves_1 = [(0,0),(2,3),(0,0),(3,0),(3,1), (0,3)]
     correctmoves_2 = [(3,3),(0,0),(3,3),(0,2),(3,1),(0,0)]
     correct = 0
@@ -100,13 +102,14 @@ if test_select_move_alphabeta:
       if (value1 == correctmoves_1[i] and value2 == correctmoves_2[i]):
         correct+=1
       else:
-        print(value1, value2)
-        print(correctmoves_1[i], correctmoves_2[i])
-    print("-------------------------------------------")
-    print('Testing Alphabeta (no Depth Limit)')
+        print("Answer: {} {}".format(value1, value2))
+        print("Solution: {} {}".format(correctmoves_1[i], correctmoves_2[i]))
+
     print("You computed correct alphabeta moves for {} of {} small boards".format(correct, len(correctmoves_1)))
   
 if test_select_move_equal:
+    print("-------------------------------------------")
+    print('Testing Minimax and Alphabeta Moves Equality (no Depth Limit)')
     correctmoves_1 = [(0,0),(2,3),(0,0),(3,0),(3,1)]
     correctmoves_2 = [(3,3),(0,0),(3,3),(0,2),(3,1)]
     correct = 0
@@ -118,10 +121,7 @@ if test_select_move_equal:
       value1_ab = select_move_alphabeta(board, 1, 6)
       value2_ab = select_move_alphabeta(board, 2, 6)
       if (value1_minimax == value1_ab == correctmoves_1[i] and value2_minimax == value2_ab == correctmoves_2[i]):
-        correct+=1  
-
-    print("-------------------------------------------")
-    print('Testing Minimax and Alphabeta Moves Equality (no Depth Limit)')
+        correct+=1
     print("You computed correct moves for {} of {} tests".format(correct, len(correctmoves_1)))
 
 if test_caching_big:

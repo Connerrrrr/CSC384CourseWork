@@ -11,6 +11,7 @@ from othello_shared import find_lines, get_possible_moves, get_score, play_move
 
 cache = {}
 
+
 def eprint(*args, **kwargs):  # you can use this for debugging, as it will print to sterr and not stdout
     print(*args, file=sys.stderr, **kwargs)
 
