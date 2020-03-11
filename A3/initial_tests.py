@@ -140,6 +140,9 @@ if test_caching_big:
       with_cache = select_move_alphabeta(bigboards[i], 1, 6, 1)
       end_time_2 = os.times()[0]
 
+      print("Without cache: {}".format((end_time_1 - start_time_1)))
+      print("With cache: {}".format((end_time_2 - start_time_2)))
+
       if (end_time_1 - start_time_1) >= (end_time_2 - start_time_2):
         check_1 += 1
 
@@ -167,9 +170,8 @@ if test_ordering:
 
       if (end_time_1 - start_time_1) >= (end_time_2 - start_time_2):
         check_1 += 1
-      else:
-          print("With ordering: {}".format((end_time_2 - start_time_2)))
-          print("Without ordering: {}".format((end_time_1 - start_time_1)))
+      print("Without ordering: {}".format((end_time_1 - start_time_1)))
+      print("With ordering: {}".format((end_time_2 - start_time_2)))
 
       if (with_order == no_order):
          print(with_order)
