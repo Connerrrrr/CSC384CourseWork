@@ -150,8 +150,6 @@ def alphabeta_min_node(board, color, alpha, beta, limit, caching=0, ordering=0):
         return None, compute_utility(board, color)
 
     minUtility = float('inf')
-    if ordering:
-        possible_moves = ordered_moves(board, possible_moves, color, opponent)
     for move in possible_moves:
         # Get the new board
         (column, row) = move
