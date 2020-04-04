@@ -476,22 +476,6 @@ def remove_var(var, new_scope, scopes):
     return new_scopes
 
 
-def restrict(factors_list, evidence_variables_list):
-    for i in range(len(factors_list)):
-        evidences = []
-        for evidence in evidence_variables_list:
-            for variable in factors_list[i].get_scope():
-                if evidence == variable:
-                    evidences.append(evidence)
-        # scenario where current factor has evidence variables
-        if evidences:
-            for evidence in evidences:
-                new_factor = restrict_factor(factors_list[i], evidence, evidence.get_evidence())
-                factors_list[i] = new_factor
-
-
-###
-# TODO: Implement the following
 def VE(Net, QueryVar, EvidenceVars):
     """
     Input: Net---a BN object (a Bayes Net)
@@ -515,36 +499,57 @@ def VE(Net, QueryVar, EvidenceVars):
 
     # IMPLEMENT
     factors = Net.factors()
+    # Restrict all given factors
     restrict(factors, EvidenceVars)
-    restriction = 1
     removing_factors = []
-    for factor in removing_factors:
-        factors.remove(factor)
 
+    # Remove constant factors
+    for factor in factors:
+        if not factor.get_scope():
+            removing_factors.append(factor)
+
+    # Get the order of elimination
     ordered_variables = min_fill_ordering(factors, QueryVar)
 
+    # Loop through variables in order
     for variable in ordered_variables:
         factors_list = []
+
+        # Get all the factors that contains current variable
         for factor in factors:
             if variable in factor.get_scope():
                 factors_list.append(factor)
-        if len(factors_list) >= 1:
+
+        if len(factors_list):
+            # Multiply the common factors
             combined_factor = multiply_factors(factors_list)
+            # Sum up variables
             combined_factor = sum_out_variable(combined_factor, variable)
-            for factorToRemove in factors_list:
-                factors.remove(factorToRemove)
-            if combined_factor:
-                factors.append(combined_factor)
+            # Remove all previous-related factors
+            for factor_to_remove in factors_list:
+                factors.remove(factor_to_remove)
+            # Insert the combined factor
+            factors.append(combined_factor)
 
+    # Multiply rest of the factors
     final_factor = multiply_factors(factors)
-    size = 1
 
-    for v in final_factor.get_scope():
-        size = size * v.domain_size()
-
-    for i in range(0, size):
-        final_factor.values[i] *= restriction
-
+    # Only normalize when divisor not equal to zero
     if float(sum(final_factor.values)) != 0:
         return [value / float(sum(final_factor.values)) for value in final_factor.values]
     return [value for value in final_factor.values]
+
+
+def restrict(factors_list, evidence_variables_list):
+    for i in range(len(factors_list)):
+        evidences = []
+        # Get all the evidence variables in current factor
+        for evidence in evidence_variables_list:
+            for variable in factors_list[i].get_scope():
+                if evidence == variable:
+                    evidences.append(evidence)
+        # scenario where current factor has evidence variables
+        if evidences:
+            for evidence in evidences:
+                new_factor = restrict_factor(factors_list[i], evidence, evidence.get_evidence())
+                factors_list[i] = new_factor
