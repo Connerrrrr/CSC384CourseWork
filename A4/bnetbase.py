@@ -1,4 +1,4 @@
-'''Classes for variable elimination Routines 
+"""Classes for variable elimination Routines
    A) class BN_Variable
 
       This class allows one to define Bayes Net variables.
@@ -9,13 +9,13 @@
       variable domain.
 
       The variable also has a set and get value method. These set a
-      value for the variable that can be used by the factor class. 
+      value for the variable that can be used by the factor class.
 
 
     B) class factor
 
       This class allows one to define a factor specified by a table
-      of values. 
+      of values.
 
       On initialization the variables the factor is over is
       specified. This must be a list of variables. This list of
@@ -33,15 +33,16 @@
       probability table in the bayes-net. Then one initializes the
       factor by iteratively setting the values of all of the factor's
       variables and then adding the factor's numeric value using the
-      add_value method. 
+      add_value method.
 
     C) class BN
        This class allows one to put factors and variables together to form a Bayes net.
        It serves as a convient place to store all of the factors and variables associated
        with a Bayes Net in one place. It also has some utility routines to, e.g,., find
-       all of the factors a variable is involved in. 
+       all of the factors a variable is involved in.
 
-    '''
+    """
+
 
 
 class Variable:
@@ -60,7 +61,6 @@ class Variable:
 
     def add_domain_values(self, values):
         """Add domain values to the domain. values should be a list."""
-
         for val in values:
             self.dom.append(val)
 
@@ -108,7 +108,6 @@ class Variable:
     def __str__(self):
         """more elaborate string for printing"""
         return "{}, Dom = {}".format(self.name, self.dom)
-
 
 class Factor:
     """Class for defining factors. A factor is a function that is over
@@ -449,7 +448,8 @@ def min_fill_var(scopes, Vars):
             minv = v
             minfill = fill
             min_new_scope = new_scope
-    return (minv, min_new_scope)
+    return minv, min_new_scope
+
 
 
 def compute_fill(scopes, var):
@@ -459,7 +459,7 @@ def compute_fill(scopes, var):
     for s in scopes:
         if var in s:
             for v in s:
-                if not v in union:
+                if v not in union:
                     union.append(v)
     if var in union: union.remove(var)
     return len(union), union
@@ -491,6 +491,7 @@ def restrict(factors_list, evidence_variables_list):
 
 
 ###
+# TODO: Implement the following
 def VE(Net, QueryVar, EvidenceVars):
     """
     Input: Net---a BN object (a Bayes Net)
